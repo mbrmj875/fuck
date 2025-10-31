@@ -7,8 +7,42 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- إضافة Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+        import { getDatabase } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCpW8t7329W1mQOgouEyeaDlQC9e96Wnhc",
+            authDomain: "fuck-24454.firebaseapp.com",
+            projectId: "fuck-24454",
+            storageBucket: "fuck-24454.firebasestorage.app",
+            messagingSenderId: "778662818353",
+            appId: "1:778662818353:web:6776ad664c449b01d91b10",
+            measurementId: "G-16SPWLLE4T"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const database = getDatabase(app);
+        const auth = getAuth(app);
+
+        // جعل المتغيرات متاحة عالمياً
+        window.firebaseApp = app;
+        window.firebaseDatabase = database;
+        window.firebaseAuth = auth;
+        window.firebaseAuthFunctions = {
+            createUserWithEmailAndPassword,
+            signInWithEmailAndPassword,
+            signOut,
+            onAuthStateChanged,
+            sendPasswordResetEmail
+        };
+    </script>
     
     <style>
         :root {
@@ -70,7 +104,27 @@
             min-height: 70vh;
         }
         
-        .login-form {
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .auth-tab {
+            flex: 1;
+            text-align: center;
+            padding: 1rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .auth-tab.active {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+        }
+        
+        .login-form, .register-form {
             background: white;
             padding: 2.5rem;
             border-radius: 12px;
@@ -80,11 +134,11 @@
             transition: transform 0.3s;
         }
         
-        .login-form:hover {
+        .login-form:hover, .register-form:hover {
             transform: translateY(-5px);
         }
         
-        .login-form h2 {
+        .login-form h2, .register-form h2 {
             margin-bottom: 1.5rem;
             text-align: center;
             color: var(--primary-color);
@@ -385,6 +439,29 @@
             color: var(--danger-color);
         }
         
+        .error-message {
+            color: var(--danger-color);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        
+        .reset-password {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .reset-password a {
+            color: var(--primary-color);
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        .reset-password a:hover {
+            text-decoration: underline;
+        }
+        
         @media (max-width: 768px) {
             .schedule-container {
                 grid-template-columns: 1fr;
@@ -420,20 +497,55 @@
     <div class="container">
         <!-- قسم تسجيل الدخول -->
         <div id="auth-section" class="auth-container">
-            <div class="login-form">
+            <div class="login-form" id="login-form">
+                <div class="auth-tabs">
+                    <div class="auth-tab active" id="login-tab">تسجيل الدخول</div>
+                    <div class="auth-tab" id="register-tab">إنشاء حساب</div>
+                </div>
                 <h2><i class="fas fa-sign-in-alt"></i> تسجيل الدخول</h2>
                 <form id="loginForm">
                     <div class="form-group">
                         <label for="email"><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
                         <input type="email" id="email" required placeholder="أدخل بريدك الإلكتروني">
                     </div>
+                    <div class="form-group">
+                        <label for="password"><i class="fas fa-lock"></i> كلمة المرور</label>
+                        <input type="password" id="password" required placeholder="أدخل كلمة المرور">
+                    </div>
+                    <div class="error-message" id="login-error"></div>
                     <button type="submit" class="btn btn-full">دخول إلى النظام</button>
                 </form>
-                <div style="margin-top: 1.5rem; text-align: center;">
-                    <p>بيانات الدخول للاختبار:</p>
-                    <p style="font-size: 0.9rem; color: #6c757d;">khaled@example.com</p>
-                    <p style="font-size: 0.9rem; color: #6c757d;">mohammed@example.com</p>
+                <div class="reset-password">
+                    <a id="reset-password-link">نسيت كلمة المرور؟</a>
                 </div>
+            </div>
+            
+            <div class="register-form" id="register-form" style="display: none;">
+                <div class="auth-tabs">
+                    <div class="auth-tab" id="login-tab-reg">تسجيل الدخول</div>
+                    <div class="auth-tab active" id="register-tab-reg">إنشاء حساب</div>
+                </div>
+                <h2><i class="fas fa-user-plus"></i> إنشاء حساب جديد</h2>
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label for="reg-name"><i class="fas fa-user"></i> الاسم الكامل</label>
+                        <input type="text" id="reg-name" required placeholder="أدخل اسمك الكامل">
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-email"><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
+                        <input type="email" id="reg-email" required placeholder="أدخل بريدك الإلكتروني">
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-password"><i class="fas fa-lock"></i> كلمة المرور</label>
+                        <input type="password" id="reg-password" required placeholder="أدخل كلمة المرور (6 أحرف على الأقل)">
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-confirm-password"><i class="fas fa-lock"></i> تأكيد كلمة المرور</label>
+                        <input type="password" id="reg-confirm-password" required placeholder="أعد إدخال كلمة المرور">
+                    </div>
+                    <div class="error-message" id="register-error"></div>
+                    <button type="submit" class="btn btn-full">إنشاء حساب</button>
+                </form>
             </div>
         </div>
         
@@ -455,7 +567,7 @@
                 </div>
             </div>
             
-            <div id="db-status" class="db-status status-online" style="display: none;">
+            <div id="db-status" class="db-status status-online">
                 <i class="fas fa-database"></i> متصل بقاعدة البيانات السحابية
             </div>
             
@@ -583,39 +695,6 @@
     </footer>
 
     <script>
-        // 🔧 تكوين Firebase - استبدل هذه البيانات ببيانات مشروعك
-        const firebaseConfig = {
-            apiKey: "AIzaSyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-            authDomain: "your-project.firebaseapp.com",
-            databaseURL: "https://your-project-default-rtdb.firebaseio.com",
-            projectId: "your-project",
-            storageBucket: "your-project.appspot.com",
-            messagingSenderId: "123456789",
-            appId: "1:123456789:web:abcdef123456"
-        };
-
-        // تهيئة Firebase
-        let database;
-        try {
-            firebase.initializeApp(firebaseConfig);
-            database = firebase.database();
-            document.getElementById('db-status').style.display = 'block';
-        } catch (error) {
-            console.log('Firebase not configured, using local storage');
-            document.getElementById('db-status').className = 'db-status status-offline';
-            document.getElementById('db-status').innerHTML = '<i class="fas fa-database"></i> غير متصل بالسحابة - استخدام التخزين المحلي';
-            document.getElementById('db-status').style.display = 'block';
-        }
-
-        // بيانات المستخدمين
-        const users = [
-            { id: 1, name: "خالد", email: "khaled@example.com" },
-            { id: 2, name: "محمد", email: "mohammed@example.com" },
-            { id: 3, name: "ماجد", email: "majed@example.com" },
-            { id: 4, name: "زيد", email: "zaid@example.com" },
-            { id: 5, name: "عمر", email: "omar@example.com" }
-        ];
-        
         // أيام الأسبوع
         const daysOfWeek = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
         
@@ -624,6 +703,13 @@
         const loadingSection = document.getElementById('loading-section');
         const dashboard = document.getElementById('dashboard');
         const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const loginTab = document.getElementById('login-tab');
+        const registerTab = document.getElementById('register-tab');
+        const loginTabReg = document.getElementById('login-tab-reg');
+        const registerTabReg = document.getElementById('register-tab-reg');
+        const loginFormContainer = document.getElementById('login-form');
+        const registerFormContainer = document.getElementById('register-form');
         const userName = document.getElementById('user-name');
         const userEmail = document.getElementById('user-email');
         const kitchenDays = document.getElementById('kitchen-days');
@@ -636,6 +722,9 @@
         const markCompletedBtn = document.getElementById('mark-completed');
         const cleaningHistoryContainer = document.getElementById('cleaning-history');
         const dbStatus = document.getElementById('db-status');
+        const loginError = document.getElementById('login-error');
+        const registerError = document.getElementById('register-error');
+        const resetPasswordLink = document.getElementById('reset-password-link');
         
         // تهيئة أيام الأسبوع في الواجهة
         function initializeDaySelectors() {
@@ -663,26 +752,189 @@
             });
         }
         
+        // تبديل بين تسجيل الدخول وإنشاء حساب
+        loginTab.addEventListener('click', function() {
+            loginFormContainer.style.display = 'block';
+            registerFormContainer.style.display = 'none';
+            loginTab.classList.add('active');
+            registerTab.classList.remove('active');
+            clearErrors();
+        });
+        
+        registerTab.addEventListener('click', function() {
+            loginFormContainer.style.display = 'none';
+            registerFormContainer.style.display = 'block';
+            registerTab.classList.add('active');
+            loginTab.classList.remove('active');
+            clearErrors();
+        });
+        
+        loginTabReg.addEventListener('click', function() {
+            loginFormContainer.style.display = 'block';
+            registerFormContainer.style.display = 'none';
+            loginTab.classList.add('active');
+            registerTab.classList.remove('active');
+            clearErrors();
+        });
+        
+        registerTabReg.addEventListener('click', function() {
+            loginFormContainer.style.display = 'none';
+            registerFormContainer.style.display = 'block';
+            registerTab.classList.add('active');
+            loginTab.classList.remove('active');
+            clearErrors();
+        });
+        
+        // مسح رسائل الخطأ
+        function clearErrors() {
+            loginError.style.display = 'none';
+            registerError.style.display = 'none';
+        }
+        
         // تسجيل الدخول
-        loginForm.addEventListener('submit', function(e) {
+        loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
             
-            const user = users.find(u => u.email === email);
-            
-            if (user) {
-                // حفظ بيانات المستخدم الحالي
-                localStorage.setItem('currentUser', JSON.stringify(user));
-                
-                // عرض شاشة التحميل
+            try {
                 showLoading();
                 
-                // تحميل البيانات من Firebase أو localStorage
-                loadUserData(user.id);
-            } else {
-                alert('البريد الإلكتروني غير مسجل في النظام');
+                if (window.firebaseAuth) {
+                    // استخدام Firebase Authentication
+                    const userCredential = await window.firebaseAuthFunctions.signInWithEmailAndPassword(window.firebaseAuth, email, password);
+                    const user = userCredential.user;
+                    
+                    // تحميل بيانات المستخدم الإضافية
+                    loadUserData(user.uid);
+                } else {
+                    // استخدام النظام القديم (للتوافقية)
+                    const userData = JSON.parse(localStorage.getItem('userData')) || {};
+                    if (userData.email === email && userData.password === password) {
+                        showDashboard(userData.uid, userData, []);
+                    } else {
+                        hideLoading();
+                        showError(loginError, 'البريد الإلكتروني أو كلمة المرور غير صحيحة');
+                    }
+                }
+            } catch (error) {
+                hideLoading();
+                showError(loginError, getAuthErrorMessage(error.code));
             }
         });
+        
+        // إنشاء حساب جديد
+        registerForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const name = document.getElementById('reg-name').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+            const confirmPassword = document.getElementById('reg-confirm-password').value;
+            
+            // التحقق من تطابق كلمتي المرور
+            if (password !== confirmPassword) {
+                showError(registerError, 'كلمتا المرور غير متطابقتين');
+                return;
+            }
+            
+            // التحقق من طول كلمة المرور
+            if (password.length < 6) {
+                showError(registerError, 'كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+                return;
+            }
+            
+            try {
+                showLoading();
+                
+                if (window.firebaseAuth) {
+                    // استخدام Firebase Authentication
+                    const userCredential = await window.firebaseAuthFunctions.createUserWithEmailAndPassword(window.firebaseAuth, email, password);
+                    const user = userCredential.user;
+                    
+                    // حفظ بيانات المستخدم الإضافية
+                    const userData = {
+                        name: name,
+                        email: email,
+                        uid: user.uid
+                    };
+                    
+                    if (window.firebaseDatabase) {
+                        // استخدام Realtime Database
+                        const { ref, set } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js');
+                        await set(ref(window.firebaseDatabase, 'users/' + user.uid), userData);
+                    } else {
+                        localStorage.setItem('userData', JSON.stringify(userData));
+                    }
+                    
+                    // تحميل لوحة التحكم
+                    loadUserData(user.uid);
+                } else {
+                    // استخدام النظام القديم (للتوافقية)
+                    const uid = 'user_' + new Date().getTime();
+                    const userData = {
+                        name: name,
+                        email: email,
+                        password: password,
+                        uid: uid
+                    };
+                    
+                    localStorage.setItem('userData', JSON.stringify(userData));
+                    showDashboard(uid, userData, []);
+                }
+            } catch (error) {
+                hideLoading();
+                showError(registerError, getAuthErrorMessage(error.code));
+            }
+        });
+        
+        // إعادة تعيين كلمة المرور
+        resetPasswordLink.addEventListener('click', async function() {
+            const email = document.getElementById('email').value;
+            
+            if (!email) {
+                showError(loginError, 'يرجى إدخال البريد الإلكتروني أولاً');
+                return;
+            }
+            
+            try {
+                if (window.firebaseAuth) {
+                    await window.firebaseAuthFunctions.sendPasswordResetEmail(window.firebaseAuth, email);
+                    alert('تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني');
+                } else {
+                    alert('هذه الميزة غير متاحة في وضع التخزين المحلي');
+                }
+            } catch (error) {
+                showError(loginError, getAuthErrorMessage(error.code));
+            }
+        });
+        
+        // عرض رسالة خطأ
+        function showError(element, message) {
+            element.textContent = message;
+            element.style.display = 'block';
+        }
+        
+        // تحويل رمز خطأ Firebase إلى رسالة مفهومة
+        function getAuthErrorMessage(errorCode) {
+            switch (errorCode) {
+                case 'auth/invalid-email':
+                    return 'البريد الإلكتروني غير صحيح';
+                case 'auth/user-disabled':
+                    return 'هذا الحساب معطل';
+                case 'auth/user-not-found':
+                    return 'لا يوجد حساب مرتبط بهذا البريد الإلكتروني';
+                case 'auth/wrong-password':
+                    return 'كلمة المرور غير صحيحة';
+                case 'auth/email-already-in-use':
+                    return 'هذا البريد الإلكتروني مستخدم بالفعل';
+                case 'auth/weak-password':
+                    return 'كلمة المرور ضعيفة، يجب أن تكون 6 أحرف على الأقل';
+                case 'auth/network-request-failed':
+                    return 'خطأ في الاتصال بالشبكة';
+                default:
+                    return 'حدث خطأ غير متوقع';
+            }
+        }
         
         // عرض شاشة التحميل
         function showLoading() {
@@ -699,32 +951,37 @@
         // تحميل بيانات المستخدم
         async function loadUserData(userId) {
             try {
-                if (database) {
+                let userData = {};
+                let userHistory = [];
+                
+                if (window.firebaseDatabase) {
                     // استخدام Firebase
-                    const userRef = database.ref('users/' + userId);
-                    const snapshot = await userRef.once('value');
-                    const userData = snapshot.val() || {};
+                    const { ref, get, query, orderByChild, equalTo } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js');
+                    
+                    // تحميل بيانات المستخدم
+                    const userRef = ref(window.firebaseDatabase, 'users/' + userId);
+                    const snapshot = await get(userRef);
+                    userData = snapshot.val() || {};
                     
                     // تحميل السجل
-                    const historyRef = database.ref('cleaningHistory').orderByChild('userId').equalTo(userId);
-                    const historySnapshot = await historyRef.once('value');
-                    const userHistory = [];
+                    const historyRef = ref(window.firebaseDatabase, 'cleaningHistory');
+                    const historyQuery = query(historyRef, orderByChild('userId'), equalTo(userId));
+                    const historySnapshot = await get(historyQuery);
                     
                     historySnapshot.forEach(childSnapshot => {
                         userHistory.push(childSnapshot.val());
                     });
-                    
-                    showDashboard(userId, userData, userHistory);
                 } else {
                     // استخدام localStorage
-                    const userData = JSON.parse(localStorage.getItem(`userData_${userId}`)) || {};
-                    const userHistory = JSON.parse(localStorage.getItem(`userHistory_${userId}`)) || [];
-                    showDashboard(userId, userData, userHistory);
+                    userData = JSON.parse(localStorage.getItem('userData')) || {};
+                    userHistory = JSON.parse(localStorage.getItem(`userHistory_${userId}`)) || [];
                 }
+                
+                showDashboard(userId, userData, userHistory);
             } catch (error) {
                 console.error('Error loading data:', error);
                 // استخدام localStorage كبديل
-                const userData = JSON.parse(localStorage.getItem(`userData_${userId}`)) || {};
+                const userData = JSON.parse(localStorage.getItem('userData')) || {};
                 const userHistory = JSON.parse(localStorage.getItem(`userHistory_${userId}`)) || [];
                 showDashboard(userId, userData, userHistory);
             } finally {
@@ -737,9 +994,8 @@
             authSection.style.display = 'none';
             dashboard.style.display = 'block';
             
-            const user = users.find(u => u.id === userId);
-            userName.textContent = user.name;
-            userEmail.textContent = user.email;
+            userName.textContent = userData.name || 'مستخدم';
+            userEmail.textContent = userData.email || '';
             
             // تحميل الجدول الحالي للمستخدم
             loadUserSchedule(userData);
@@ -833,8 +1089,10 @@
         
         // حفظ الجدول
         saveScheduleBtn.addEventListener('click', async function() {
-            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            const currentUser = window.firebaseAuth ? window.firebaseAuth.currentUser : JSON.parse(localStorage.getItem('userData'));
             if (!currentUser) return;
+            
+            const userId = currentUser.uid || currentUser.id;
             
             // جمع الأيام المختارة للمطبخ
             const selectedKitchenDays = [];
@@ -892,14 +1150,17 @@
             try {
                 showLoading();
                 
-                if (database) {
+                if (window.firebaseDatabase) {
                     // حفظ في Firebase
-                    await database.ref('users/' + currentUser.id).set(userData);
+                    const { ref, update } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js');
+                    await update(ref(window.firebaseDatabase, 'users/' + userId), userData);
                     dbStatus.className = 'db-status status-online';
                     dbStatus.innerHTML = '<i class="fas fa-database"></i> تم الحفظ في قاعدة البيانات السحابية';
                 } else {
                     // حفظ في localStorage
-                    localStorage.setItem(`userData_${currentUser.id}`, JSON.stringify(userData));
+                    const existingData = JSON.parse(localStorage.getItem('userData')) || {};
+                    const updatedData = {...existingData, ...userData};
+                    localStorage.setItem('userData', JSON.stringify(updatedData));
                     dbStatus.className = 'db-status status-offline';
                     dbStatus.innerHTML = '<i class="fas fa-database"></i> تم الحفظ محلياً (غير متصل بالسحابة)';
                 }
@@ -918,9 +1179,10 @@
         
         // تسجيل المهام المكتملة
         markCompletedBtn.addEventListener('click', async function() {
-            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            const currentUser = window.firebaseAuth ? window.firebaseAuth.currentUser : JSON.parse(localStorage.getItem('userData'));
             if (!currentUser) return;
             
+            const userId = currentUser.uid || currentUser.id;
             const today = new Date();
             const dateString = today.toLocaleDateString('ar-EG');
             const timestamp = new Date().getTime();
@@ -948,25 +1210,26 @@
                     showLoading();
                     
                     const historyRecord = {
-                        userId: currentUser.id,
+                        userId: userId,
                         date: dateString,
                         tasks: completedTasks,
                         status: 'completed',
                         timestamp: timestamp
                     };
                     
-                    if (database) {
+                    if (window.firebaseDatabase) {
                         // حفظ في Firebase
-                        await database.ref('cleaningHistory').push(historyRecord);
+                        const { ref, push } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js');
+                        await push(ref(window.firebaseDatabase, 'cleaningHistory'), historyRecord);
                     } else {
                         // حفظ في localStorage
-                        const userHistory = JSON.parse(localStorage.getItem(`userHistory_${currentUser.id}`)) || [];
+                        const userHistory = JSON.parse(localStorage.getItem(`userHistory_${userId}`)) || [];
                         userHistory.unshift(historyRecord);
-                        localStorage.setItem(`userHistory_${currentUser.id}`, JSON.stringify(userHistory));
+                        localStorage.setItem(`userHistory_${userId}`, JSON.stringify(userHistory));
                     }
                     
                     // إعادة تحميل السجل
-                    loadUserData(currentUser.id);
+                    loadUserData(userId);
                     
                     alert(`تم تسجيل ${completedTasks.length} مهمة مكتملة بنجاح!`);
                 } catch (error) {
@@ -982,7 +1245,10 @@
         
         // تسجيل الخروج
         logoutBtn.addEventListener('click', function() {
-            localStorage.removeItem('currentUser');
+            if (window.firebaseAuth) {
+                window.firebaseAuthFunctions.signOut(window.firebaseAuth);
+            }
+            localStorage.removeItem('userData');
             location.reload();
         });
         
@@ -1052,10 +1318,21 @@
         document.addEventListener('DOMContentLoaded', function() {
             initializeDaySelectors();
             
-            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-            if (currentUser) {
-                showLoading();
-                loadUserData(currentUser.id);
+            if (window.firebaseAuth) {
+                // استخدام Firebase Authentication
+                window.firebaseAuthFunctions.onAuthStateChanged(window.firebaseAuth, user => {
+                    if (user) {
+                        showLoading();
+                        loadUserData(user.uid);
+                    }
+                });
+            } else {
+                // استخدام النظام القديم
+                const currentUser = JSON.parse(localStorage.getItem('userData'));
+                if (currentUser) {
+                    showLoading();
+                    loadUserData(currentUser.uid || currentUser.id);
+                }
             }
         });
     </script>
