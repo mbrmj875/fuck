@@ -9,40 +9,39 @@
     
     <!-- إضافة Firebase SDK -->
     <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getDatabase, ref, set, get, update, push, query, orderByChild, equalTo } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+    import { getDatabase, ref, set, get, update, push, query, orderByChild, equalTo } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
-        // 🔧 تكوين Firebase - استبدل هذه البيانات ببيانات مشروعك
-        const firebaseConfig = {
-            apiKey: "AIzaSyAVBkMlr2rLtAjBSshOyi8QOStvwFJbvy4",
-            authDomain: "fuck-96b22.firebaseapp.com",
-            databaseURL: "https://fuck-96b22-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "fuck-96b22",
-            storageBucket: "fuck-96b22.firebasestorage.app",
-            messagingSenderId: "188551788133",
-            appId: "1:188551788133:web:a1c1dd9b246280b65a388c"
-        };
+    // 🔧 تكوين Firebase - استخدم التكوين الجديد
+const firebaseConfig = {
+  apiKey: "AIzaSyCLu_BFpzncRewcKV1qMrI9LYE6lAhoTNw",
+  authDomain: "fuck-3c32a.firebaseapp.com",
+  projectId: "fuck-3c32a",
+  storageBucket: "fuck-3c32a.firebasestorage.app",
+  messagingSenderId: "344806495339",
+  appId: "1:344806495339:web:884d418af451d68dc3cd2e"
+};
 
-        // تهيئة Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const database = getDatabase(app);
+    // تهيئة Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const database = getDatabase(app);
 
-        // جعل المتغيرات متاحة عالمياً
-        window.firebaseAuth = auth;
-        window.firebaseDatabase = database;
-        window.firebaseFunctions = {
-            createUserWithEmailAndPassword,
-            signInWithEmailAndPassword,
-            signOut,
-            onAuthStateChanged,
-            sendPasswordResetEmail,
-            ref, set, get, update, push, query, orderByChild, equalTo
-        };
+    // جعل المتغيرات متاحة عالمياً
+    window.firebaseAuth = auth;
+    window.firebaseDatabase = database;
+    window.firebaseFunctions = {
+        createUserWithEmailAndPassword,
+        signInWithEmailAndPassword,
+        signOut,
+        onAuthStateChanged,
+        sendPasswordResetEmail,
+        ref, set, get, update, push, query, orderByChild, equalTo
+    };
 
-        console.log('✅ Firebase initialized successfully');
-    </script>
+    console.log('✅ Firebase initialized successfully');
+</script>
     
     <style>
         :root {
