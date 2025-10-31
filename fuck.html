@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة تنظيف الشقة</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #1abc9c;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --text-color: #333;
+            --border-color: #ddd;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            flex: 1;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-radius: 0 0 20px 20px;
+            margin-bottom: 2rem;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .logo i {
+            font-size: 2.5rem;
+            color: var(--accent-color);
+        }
+        
+        .logo h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+        
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 60vh;
+        }
+        
+        .login-form {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
+            transition: transform 0.3s;
+        }
+        
+        .login-form:hover {
+            transform: translateY(-5px);
+        }
+        
+        .login-form h2 {
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .form-group input:focus {
+            border-color: var(--accent-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(26, 188, 156, 0.2);
+        }
+        
+        .btn {
+            display: inline-block;
+            background: var(--secondary-color);
+            color: white;
+            padding: 0.85rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .btn:hover {
+            background: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .btn-full {
+            width: 100%;
+        }
+        
+        .btn-accent {
+            background: var(--accent-color);
+        }
+        
+        .btn-accent:hover {
+            background: #16a085;
+        }
+        
+        .dashboard {
+            display: none;
+            margin-top: 1rem;
+        }
+        
+        .user-info {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .user-details h2 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-details p {
+            color: #6c757d;
+        }
+        
+        .schedule-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .schedule-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+            border-top: 4px solid var(--accent-color);
+        }
+        
+        .schedule-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .schedule-card h3 {
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+            padding-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .schedule-card h3 i {
+            color: var(--accent-color);
+        }
+        
+        .day-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .day-option {
+            flex: 1;
+            min-width: 80px;
+            text-align: center;
+            padding: 0.75rem 0.5rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            border: 1px solid var(--border-color);
+        }
+        
+        .day-option.selected {
+            background: var(--accent-color);
+            color: white;
+            transform: scale(1.05);
+            border-color: var(--accent-color);
+        }
+        
+        .cleaning-details {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px dashed var(--border-color);
+        }
+        
+        .cleaning-details h4 {
+            margin-bottom: 1rem;
+            color: var(--secondary-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .task-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+        
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 6px;
+            transition: background 0.3s;
+        }
+        
+        .task-item:hover {
+            background: #e9ecef;
+        }
+        
+        .task-item input[type="checkbox"] {
+            width: auto;
+        }
+        
+        .notification {
+            padding: 1.25rem;
+            margin: 1.5rem 0;
+            border-radius: 10px;
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            color: #856404;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .notification i {
+            font-size: 1.5rem;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--primary-color);
+        }
+        
+        .loading i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: spin 1.5s linear infinite;
+            color: var(--accent-color);
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading p {
+            font-size: 1.2rem;
+            margin-top: 1rem;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 1.5rem;
+            color: #6c757d;
+            border-top: 1px solid var(--border-color);
+            background: white;
+            border-radius: 20px 20px 0 0;
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .action-buttons .btn {
+            width: auto;
+            flex: 1;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-online {
+            background: var(--accent-color);
+        }
+        
+        @media (max-width: 768px) {
+            .schedule-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .task-list {
+                grid-template-columns: 1fr;
+            }
+            
+            .user-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .logo h1 {
+                font-size: 1.8rem;
+            }
+            
+            header p {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-broom"></i>
+                <h1>نظام إدارة تنظيف الشقة</h1>
+            </div>
+            <p>نظام متكامل لإدارة مهام التنظيف بين أفراد الشقة</p>
+        </div>
+    </header>
+    
+    <div class="container">
+        <!-- قسم تسجيل الدخول -->
+        <div id="auth-section" class="auth-container">
+            <div class="login-form">
+                <h2><i class="fas fa-sign-in-alt"></i> تسجيل الدخول</h2>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="email"><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
+                        <input type="email" id="email" required placeholder="أدخل بريدك الإلكتروني">
+                    </div>
+                    <button type="submit" class="btn btn-full btn-accent">دخول إلى النظام</button>
+                </form>
+                <div style="margin-top: 1.5rem; text-align: center; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                    <p style="font-weight: 600; margin-bottom: 0.5rem;">بيانات الدخول للاختبار:</p>
+                    <p style="font-size: 0.9rem; color: #6c757d;">khaled@example.com</p>
+                    <p style="font-size: 0.9rem; color: #6c757d;">mohammed@example.com</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- شاشة التحميل -->
+        <div id="loading-section" class="loading" style="display: none;">
+            <i class="fas fa-spinner"></i>
+            <p>جاري تحميل البيانات...</p>
+        </div>
+        
+        <!-- لوحة التحكم -->
+        <div id="dashboard" class="dashboard">
+            <div class="user-info">
+                <div class="user-details">
+                    <h2><i class="fas fa-user-circle"></i> مرحباً، <span id="user-name"></span>!</h2>
+                    <p><span class="status-indicator status-online"></span> البريد الإلكتروني: <span id="user-email"></span></p>
+                </div>
+                <div class="user-actions">
+                    <button id="logout" class="btn" style="background: #6c757d;"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</button>
+                </div>
+            </div>
+            
+            <div class="notification" id="reminder-notification" style="display: none;">
+                <i class="fas fa-bell"></i>
+                <div>
+                    <strong>تذكير بالمهام القادمة:</strong>
+                    <div id="reminder-details"></div>
+                </div>
+            </div>
+            
+            <div class="schedule-container">
+                <div class="schedule-card">
+                    <h3><i class="fas fa-utensils"></i> تنظيف المطبخ (يومي)</h3>
+                    <p>يجب تنظيف المطبخ يومياً. يرجى تحديد الأيام المخصصة لك:</p>
+                    
+                    <div class="day-selector" id="kitchen-days">
+                        <!-- سيتم ملؤها بالجافاسكريبت -->
+                    </div>
+                    
+                    <div class="cleaning-details">
+                        <h4><i class="fas fa-tasks"></i> تفاصيل تنظيف المطبخ:</h4>
+                        <div class="task-list">
+                            <div class="task-item">
+                                <input type="checkbox" id="kitchen-floor" name="kitchen-tasks">
+                                <label for="kitchen-floor">تنظيف الأرضية</label>
+                            </div>
+                            <div class="task-item">
+                                <input type="checkbox" id="kitchen-table" name="kitchen-tasks">
+                                <label for="kitchen-table">تنظيف الطاولة</label>
+                            </div>
+                            <div class="task-item">
+                                <input type="checkbox" id="kitchen-stove" name="kitchen-tasks">
+                                <label for="kitchen-stove">تنظيف الطباخ</label>
+                            </div>
+                            <div class="task-item">
+                                <input type="checkbox" id="kitchen-sink" name="kitchen-tasks">
+                                <label for="kitchen-sink">تنظيف الحوض</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="schedule-card">
+                    <h3><i class="fas fa-bath"></i> تنظيف الحمام (كل 3 أيام)</h3>
+                    <p>يتم تنظيف الحمام كل ثلاثة أيام. يرجى تحديد الأيام المخصصة لك:</p>
+                    
+                    <div class="day-selector" id="bathroom-days">
+                        <!-- سيتم ملؤها بالجافاسكريبت -->
+                    </div>
+                    
+                    <div class="cleaning-details">
+                        <h4><i class="fas fa-tasks"></i> تفاصيل تنظيف الحمام:</h4>
+                        <div class="task-list">
+                            <div class="task-item">
+                                <input type="checkbox" id="bathroom-floor" name="bathroom-tasks">
+                                <label for="bathroom-floor">تنظيف الأرضية</label>
+                            </div>
+                            <div class="task-item">
+                                <input type="checkbox" id="bathroom-sink" name="bathroom-tasks">
+                                <label for="bathroom-sink">تنظيف الحوض</label>
+                            </div>
+                            <div class="task-item">
+                                <input type="checkbox" id="bathroom-toilet" name="bathroom-tasks">
+                                <label for="bathroom-toilet">تنظيف المرحاض</label>
+                            </div>
+                            <div class="task-item">
+                                <input type="checkbox" id="bathroom-mirror" name="bathroom-tasks">
+                                <label for="bathroom-mirror">تنظيف المرآة</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="schedule-card">
+                    <h3><i class="fas fa-home"></i> تنظيف المرافق (كل 3 أيام)</h3>
+                    <p>يتم تنظيف المرافق كل ثلاثة أيام. يرجى تحديد الأيام المخصصة لك:</p>
+                    
+                    <div class="day-selector" id="facilities-days">
+                        <!-- سيتم ملؤها بالجافاسكريبت -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button id="save-schedule" class="btn btn-accent"><i class="fas fa-save"></i> حفظ الجدول والمهام</button>
+            </div>
+            
+            <div style="margin-top: 2rem; text-align: center; color: #6c757d; font-size: 0.9rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                <p><i class="fas fa-database"></i> البيانات مخزنة على السحابة - يمكنك الوصول إليها من أي جهاز</p>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="container footer-content">
+            <div>
+                <p>تم التطوير بواسطة سعد</p>
+            </div>
+            <div>
+                <p>نظام إدارة تنظيف الشقة &copy; 2023</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // بيانات المستخدمين
+        const users = [
+            { id: 1, name: "خالد", email: "khaled@example.com" },
+            { id: 2, name: "محمد", email: "mohammed@example.com" },
+            { id: 3, name: "ماجد", email: "majed@example.com" },
+            { id: 4, name: "زيد", email: "zaid@example.com" },
+            { id: 5, name: "عمر", email: "omar@example.com" }
+        ];
+        
+        // أيام الأسبوع
+        const daysOfWeek = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+        
+        // عناصر DOM
+        const authSection = document.getElementById('auth-section');
+        const loadingSection = document.getElementById('loading-section');
+        const dashboard = document.getElementById('dashboard');
+        const loginForm = document.getElementById('loginForm');
+        const userName = document.getElementById('user-name');
+        const userEmail = document.getElementById('user-email');
+        const kitchenDays = document.getElementById('kitchen-days');
+        const bathroomDays = document.getElementById('bathroom-days');
+        const facilitiesDays = document.getElementById('facilities-days');
+        const saveScheduleBtn = document.getElementById('save-schedule');
+        const logoutBtn = document.getElementById('logout');
+        const reminderNotification = document.getElementById('reminder-notification');
+        const reminderDetails = document.getElementById('reminder-details');
+        
+        // تهيئة أيام الأسبوع في الواجهة
+        function initializeDaySelectors() {
+            daysOfWeek.forEach(day => {
+                // للمطبخ (يومي)
+                const kitchenDayOption = document.createElement('div');
+                kitchenDayOption.className = 'day-option';
+                kitchenDayOption.textContent = day;
+                kitchenDayOption.dataset.day = day;
+                kitchenDays.appendChild(kitchenDayOption);
+                
+                // للحمام (كل 3 أيام)
+                const bathroomDayOption = document.createElement('div');
+                bathroomDayOption.className = 'day-option';
+                bathroomDayOption.textContent = day;
+                bathroomDayOption.dataset.day = day;
+                bathroomDays.appendChild(bathroomDayOption);
+                
+                // للمرافق (كل 3 أيام)
+                const facilitiesDayOption = document.createElement('div');
+                facilitiesDayOption.className = 'day-option';
+                facilitiesDayOption.textContent = day;
+                facilitiesDayOption.dataset.day = day;
+                facilitiesDays.appendChild(facilitiesDayOption);
+            });
+        }
+        
+        // تسجيل الدخول
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            
+            const user = users.find(u => u.email === email);
+            
+            if (user) {
+                // حفظ بيانات المستخدم الحالي
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                
+                // عرض شاشة التحميل
+                showLoading();
+                
+                // محاكاة تحميل البيانات (في النسخة الحقيقية سيتم الاتصال بقاعدة البيانات)
+                setTimeout(() => {
+                    // تحميل البيانات من localStorage (بدلاً من قاعدة البيانات)
+                    loadUserData(user.id);
+                }, 1500);
+            } else {
+                alert('البريد الإلكتروني غير مسجل في النظام');
+            }
+        });
+        
+        // عرض شاشة التحميل
+        function showLoading() {
+            authSection.style.display = 'none';
+            dashboard.style.display = 'none';
+            loadingSection.style.display = 'block';
+        }
+        
+        // إخفاء شاشة التحميل
+        function hideLoading() {
+            loadingSection.style.display = 'none';
+        }
+        
+        // تحميل بيانات المستخدم
+        function loadUserData(userId) {
+            // في هذه النسخة، نستخدم localStorage بدلاً من قاعدة البيانات
+            const userData = JSON.parse(localStorage.getItem(`userData_${userId}`)) || {};
+            
+            // عرض لوحة التحكم
+            showDashboard(userId, userData);
+            hideLoading();
+        }
+        
+        // عرض لوحة التحكم
+        function showDashboard(userId, userData) {
+            authSection.style.display = 'none';
+            dashboard.style.display = 'block';
+            
+            const user = users.find(u => u.id === userId);
+            userName.textContent = user.name;
+            userEmail.textContent = user.email;
+            
+            // تحميل الجدول الحالي للمستخدم
+            loadUserSchedule(userData);
+            
+            // إضافة أحداث النقر على أيام الأسبوع
+            addDaySelectionEvents();
+            
+            // التحقق من المهام القادمة
+            checkUpcomingTasks(userData);
+        }
+        
+        // تحميل جدول المستخدم
+        function loadUserSchedule(userData) {
+            if (!userData) return;
+            
+            // تحديد أيام المطبخ المختارة
+            if (userData.kitchen) {
+                userData.kitchen.forEach(day => {
+                    const dayElement = kitchenDays.querySelector(`[data-day="${day}"]`);
+                    if (dayElement) dayElement.classList.add('selected');
+                });
+            }
+            
+            // تحديد أيام الحمام المختارة
+            if (userData.bathroom) {
+                userData.bathroom.forEach(day => {
+                    const dayElement = bathroomDays.querySelector(`[data-day="${day}"]`);
+                    if (dayElement) dayElement.classList.add('selected');
+                });
+            }
+            
+            // تحديد أيام المرافق المختارة
+            if (userData.facilities) {
+                userData.facilities.forEach(day => {
+                    const dayElement = facilitiesDays.querySelector(`[data-day="${day}"]`);
+                    if (dayElement) dayElement.classList.add('selected');
+                });
+            }
+            
+            // تحديد المهام المكتملة للمطبخ
+            if (userData.tasks && userData.tasks.kitchen) {
+                document.getElementById('kitchen-floor').checked = userData.tasks.kitchen.floor || false;
+                document.getElementById('kitchen-table').checked = userData.tasks.kitchen.table || false;
+                document.getElementById('kitchen-stove').checked = userData.tasks.kitchen.stove || false;
+                document.getElementById('kitchen-sink').checked = userData.tasks.kitchen.sink || false;
+            }
+            
+            // تحديد المهام المكتملة للحمام
+            if (userData.tasks && userData.tasks.bathroom) {
+                document.getElementById('bathroom-floor').checked = userData.tasks.bathroom.floor || false;
+                document.getElementById('bathroom-sink').checked = userData.tasks.bathroom.sink || false;
+                document.getElementById('bathroom-toilet').checked = userData.tasks.bathroom.toilet || false;
+                document.getElementById('bathroom-mirror').checked = userData.tasks.bathroom.mirror || false;
+            }
+        }
+        
+        // إضافة أحداث اختيار الأيام
+        function addDaySelectionEvents() {
+            // للمطبخ (يومي) - يمكن اختيار أيام متعددة
+            kitchenDays.querySelectorAll('.day-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    this.classList.toggle('selected');
+                });
+            });
+            
+            // للحمام (كل 3 أيام) - يمكن اختيار أيام متعددة
+            bathroomDays.querySelectorAll('.day-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    this.classList.toggle('selected');
+                });
+            });
+            
+            // للمرافق (كل 3 أيام) - يمكن اختيار أيام متعددة
+            facilitiesDays.querySelectorAll('.day-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    this.classList.toggle('selected');
+                });
+            });
+        }
+        
+        // حفظ الجدول
+        saveScheduleBtn.addEventListener('click', function() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser) return;
+            
+            // جمع الأيام المختارة للمطبخ
+            const selectedKitchenDays = [];
+            kitchenDays.querySelectorAll('.day-option.selected').forEach(option => {
+                selectedKitchenDays.push(option.dataset.day);
+            });
+            
+            // جمع الأيام المختارة للحمام
+            const selectedBathroomDays = [];
+            bathroomDays.querySelectorAll('.day-option.selected').forEach(option => {
+                selectedBathroomDays.push(option.dataset.day);
+            });
+            
+            // جمع الأيام المختارة للمرافق
+            const selectedFacilitiesDays = [];
+            facilitiesDays.querySelectorAll('.day-option.selected').forEach(option => {
+                selectedFacilitiesDays.push(option.dataset.day);
+            });
+            
+            // جمع المهام المحددة للمطبخ
+            const kitchenTasks = {
+                floor: document.getElementById('kitchen-floor').checked,
+                table: document.getElementById('kitchen-table').checked,
+                stove: document.getElementById('kitchen-stove').checked,
+                sink: document.getElementById('kitchen-sink').checked
+            };
+            
+            // جمع المهام المحددة للحمام
+            const bathroomTasks = {
+                floor: document.getElementById('bathroom-floor').checked,
+                sink: document.getElementById('bathroom-sink').checked,
+                toilet: document.getElementById('bathroom-toilet').checked,
+                mirror: document.getElementById('bathroom-mirror').checked
+            };
+            
+            // تجهيز البيانات للحفظ
+            const userData = {
+                kitchen: selectedKitchenDays,
+                bathroom: selectedBathroomDays,
+                facilities: selectedFacilitiesDays,
+                tasks: {
+                    kitchen: kitchenTasks,
+                    bathroom: bathroomTasks
+                },
+                lastUpdated: new Date().toISOString()
+            };
+            
+            // حفظ البيانات في localStorage (بدلاً من قاعدة البيانات)
+            localStorage.setItem(`userData_${currentUser.id}`, JSON.stringify(userData));
+            
+            alert('تم حفظ الجدول والمهام بنجاح!');
+            
+            // التحقق من المهام القادمة بعد الحفظ
+            checkUpcomingTasks(userData);
+        });
+        
+        // تسجيل الخروج
+        logoutBtn.addEventListener('click', function() {
+            localStorage.removeItem('currentUser');
+            location.reload();
+        });
+        
+        // التحقق من المهام القادمة
+        function checkUpcomingTasks(userData) {
+            if (!userData) return;
+            
+            const today = new Date();
+            const todayName = daysOfWeek[today.getDay()];
+            
+            let hasUpcomingTask = false;
+            let taskMessage = "";
+            
+            // التحقق من مهام اليوم
+            if (userData.kitchen && userData.kitchen.includes(todayName)) {
+                hasUpcomingTask = true;
+                taskMessage += "• لديك تنظيف المطبخ اليوم.<br>";
+            }
+            
+            if (userData.bathroom && userData.bathroom.includes(todayName)) {
+                hasUpcomingTask = true;
+                taskMessage += "• لديك تنظيف الحمام اليوم.<br>";
+            }
+            
+            if (userData.facilities && userData.facilities.includes(todayName)) {
+                hasUpcomingTask = true;
+                taskMessage += "• لديك تنظيف المرافق اليوم.<br>";
+            }
+            
+            if (hasUpcomingTask) {
+                reminderDetails.innerHTML = taskMessage;
+                reminderNotification.style.display = 'flex';
+            } else {
+                reminderNotification.style.display = 'none';
+            }
+        }
+        
+        // التحقق من تسجيل الدخول عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeDaySelectors();
+            
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (currentUser) {
+                showLoading();
+                setTimeout(() => {
+                    loadUserData(currentUser.id);
+                }, 1000);
+            }
+        });
+    </script>
+</body>
+</html>
