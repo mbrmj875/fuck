@@ -3,17 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام إدارة تنظيف الشقة</title>
+    <title>إدارة تنظيف الشقة</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- إضافة Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    
     <style>
         :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #3498db;
-            --accent-color: #1abc9c;
-            --light-color: #ecf0f1;
-            --dark-color: #2c3e50;
-            --text-color: #333;
-            --border-color: #ddd;
+            --primary-color: #4a6fa5;
+            --secondary-color: #166088;
+            --accent-color: #4cb5ae;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
         }
         
         * {
@@ -24,28 +30,24 @@
         }
         
         body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            color: var(--text-color);
+            background-color: #f5f5f5;
+            color: var(--dark-color);
             line-height: 1.6;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
         }
         
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
-            flex: 1;
         }
         
         header {
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
-            padding: 2rem 0;
+            padding: 1.5rem 0;
             text-align: center;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            border-radius: 0 0 20px 20px;
+            border-radius: 0 0 15px 15px;
             margin-bottom: 2rem;
         }
         
@@ -53,39 +55,26 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 15px;
+            gap: 10px;
             margin-bottom: 10px;
         }
         
         .logo i {
-            font-size: 2.5rem;
-            color: var(--accent-color);
-        }
-        
-        .logo h1 {
-            font-size: 2.2rem;
-            font-weight: 700;
-        }
-        
-        header p {
-            font-size: 1.2rem;
-            opacity: 0.9;
-            max-width: 600px;
-            margin: 0 auto;
+            font-size: 2rem;
         }
         
         .auth-container {
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 60vh;
+            min-height: 70vh;
         }
         
         .login-form {
             background: white;
             padding: 2.5rem;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             width: 100%;
             max-width: 450px;
             transition: transform 0.3s;
@@ -101,10 +90,6 @@
             color: var(--primary-color);
             border-bottom: 2px solid var(--accent-color);
             padding-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
         }
         
         .form-group {
@@ -118,24 +103,24 @@
             color: var(--dark-color);
         }
         
-        .form-group input {
+        .form-group input, .form-group select {
             width: 100%;
             padding: 0.75rem 1rem;
-            border: 1px solid var(--border-color);
+            border: 1px solid #ddd;
             border-radius: 8px;
             font-size: 1rem;
-            transition: all 0.3s;
+            transition: border 0.3s;
         }
         
-        .form-group input:focus {
+        .form-group input:focus, .form-group select:focus {
             border-color: var(--accent-color);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(26, 188, 156, 0.2);
+            box-shadow: 0 0 0 3px rgba(76, 181, 174, 0.2);
         }
         
         .btn {
             display: inline-block;
-            background: var(--secondary-color);
+            background: var(--primary-color);
             color: white;
             padding: 0.85rem 1.5rem;
             border: none;
@@ -148,7 +133,7 @@
         }
         
         .btn:hover {
-            background: var(--primary-color);
+            background: var(--secondary-color);
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
@@ -157,12 +142,12 @@
             width: 100%;
         }
         
-        .btn-accent {
+        .btn-secondary {
             background: var(--accent-color);
         }
         
-        .btn-accent:hover {
-            background: #16a085;
+        .btn-secondary:hover {
+            background: #3a9c96;
         }
         
         .dashboard {
@@ -184,9 +169,6 @@
         .user-details h2 {
             color: var(--primary-color);
             margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
         
         .user-details p {
@@ -206,7 +188,6 @@
             padding: 1.5rem;
             box-shadow: 0 5px 15px rgba(0,0,0,0.05);
             transition: transform 0.3s;
-            border-top: 4px solid var(--accent-color);
         }
         
         .schedule-card:hover {
@@ -216,6 +197,7 @@
         .schedule-card h3 {
             margin-bottom: 1rem;
             color: var(--primary-color);
+            border-bottom: 2px solid var(--accent-color);
             padding-bottom: 0.5rem;
             display: flex;
             align-items: center;
@@ -238,33 +220,28 @@
             min-width: 80px;
             text-align: center;
             padding: 0.75rem 0.5rem;
-            background: #f8f9fa;
+            background: #f0f0f0;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s;
             font-weight: 500;
-            border: 1px solid var(--border-color);
         }
         
         .day-option.selected {
             background: var(--accent-color);
             color: white;
             transform: scale(1.05);
-            border-color: var(--accent-color);
         }
         
         .cleaning-details {
             margin-top: 1.5rem;
             padding-top: 1rem;
-            border-top: 1px dashed var(--border-color);
+            border-top: 1px dashed #ddd;
         }
         
         .cleaning-details h4 {
             margin-bottom: 1rem;
             color: var(--secondary-color);
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
         
         .task-list {
@@ -280,11 +257,6 @@
             padding: 0.5rem;
             background: #f8f9fa;
             border-radius: 6px;
-            transition: background 0.3s;
-        }
-        
-        .task-item:hover {
-            background: #e9ecef;
         }
         
         .task-item input[type="checkbox"] {
@@ -296,7 +268,7 @@
             margin: 1.5rem 0;
             border-radius: 10px;
             background: #fff3cd;
-            border-left: 5px solid #ffc107;
+            border-left: 5px solid var(--warning-color);
             color: #856404;
             display: flex;
             align-items: center;
@@ -309,15 +281,14 @@
         
         .loading {
             text-align: center;
-            padding: 3rem;
+            padding: 2rem;
             color: var(--primary-color);
         }
         
         .loading i {
-            font-size: 3rem;
+            font-size: 2rem;
             margin-bottom: 1rem;
-            animation: spin 1.5s linear infinite;
-            color: var(--accent-color);
+            animation: spin 1s linear infinite;
         }
         
         @keyframes spin {
@@ -325,9 +296,56 @@
             100% { transform: rotate(360deg); }
         }
         
-        .loading p {
-            font-size: 1.2rem;
-            margin-top: 1rem;
+        .history-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-top: 2rem;
+        }
+        
+        .history-section h3 {
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 0.5rem;
+        }
+        
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        
+        .history-date {
+            font-weight: 600;
+            color: var(--secondary-color);
+        }
+        
+        .history-task {
+            color: var(--dark-color);
+        }
+        
+        .history-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .status-completed {
+            background: #d4edda;
+            color: var(--success-color);
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: var(--warning-color);
         }
         
         footer {
@@ -335,18 +353,7 @@
             margin-top: 3rem;
             padding: 1.5rem;
             color: #6c757d;
-            border-top: 1px solid var(--border-color);
-            background: white;
-            border-radius: 20px 20px 0 0;
-            box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
-        }
-        
-        .footer-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            max-width: 1200px;
-            margin: 0 auto;
+            border-top: 1px solid #dee2e6;
         }
         
         .action-buttons {
@@ -360,16 +367,22 @@
             flex: 1;
         }
         
-        .status-indicator {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-right: 8px;
+        .db-status {
+            text-align: center;
+            padding: 0.5rem;
+            margin: 1rem 0;
+            border-radius: 5px;
+            font-size: 0.9rem;
         }
         
         .status-online {
-            background: var(--accent-color);
+            background: #d4edda;
+            color: var(--success-color);
+        }
+        
+        .status-offline {
+            background: #f8d7da;
+            color: var(--danger-color);
         }
         
         @media (max-width: 768px) {
@@ -389,19 +402,6 @@
             
             .action-buttons {
                 flex-direction: column;
-            }
-            
-            .footer-content {
-                flex-direction: column;
-                gap: 1rem;
-            }
-            
-            .logo h1 {
-                font-size: 1.8rem;
-            }
-            
-            header p {
-                font-size: 1rem;
             }
         }
     </style>
@@ -427,10 +427,10 @@
                         <label for="email"><i class="fas fa-envelope"></i> البريد الإلكتروني</label>
                         <input type="email" id="email" required placeholder="أدخل بريدك الإلكتروني">
                     </div>
-                    <button type="submit" class="btn btn-full btn-accent">دخول إلى النظام</button>
+                    <button type="submit" class="btn btn-full">دخول إلى النظام</button>
                 </form>
-                <div style="margin-top: 1.5rem; text-align: center; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
-                    <p style="font-weight: 600; margin-bottom: 0.5rem;">بيانات الدخول للاختبار:</p>
+                <div style="margin-top: 1.5rem; text-align: center;">
+                    <p>بيانات الدخول للاختبار:</p>
                     <p style="font-size: 0.9rem; color: #6c757d;">khaled@example.com</p>
                     <p style="font-size: 0.9rem; color: #6c757d;">mohammed@example.com</p>
                 </div>
@@ -447,12 +447,16 @@
         <div id="dashboard" class="dashboard">
             <div class="user-info">
                 <div class="user-details">
-                    <h2><i class="fas fa-user-circle"></i> مرحباً، <span id="user-name"></span>!</h2>
-                    <p><span class="status-indicator status-online"></span> البريد الإلكتروني: <span id="user-email"></span></p>
+                    <h2>مرحباً، <span id="user-name"></span>!</h2>
+                    <p>البريد الإلكتروني: <span id="user-email"></span></p>
                 </div>
                 <div class="user-actions">
-                    <button id="logout" class="btn" style="background: #6c757d;"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</button>
+                    <button id="logout" class="btn" style="background: #6c757d;">تسجيل الخروج</button>
                 </div>
+            </div>
+            
+            <div id="db-status" class="db-status status-online" style="display: none;">
+                <i class="fas fa-database"></i> متصل بقاعدة البيانات السحابية
             </div>
             
             <div class="notification" id="reminder-notification" style="display: none;">
@@ -533,31 +537,76 @@
                     <div class="day-selector" id="facilities-days">
                         <!-- سيتم ملؤها بالجافاسكريبت -->
                     </div>
+                    
+                    <div class="cleaning-details">
+                        <h4><i class="fas fa-tasks"></i> تفاصيل تنظيف المرافق:</h4>
+                        <div class="task-list">
+                            <div class="task-item">
+                                <input type="checkbox" id="facilities-floor" name="facilities-tasks">
+                                <label for="facilities-floor">كنس الأرضية</label>
+                            </div>
+                            <div class="task-item">
+                                <input type="checkbox" id="facilities-dust" name="facilities-tasks">
+                                <label for="facilities-dust">إزالة الغبار</label>
+                            </div>
+                            <div class="task-item">
+                                <input type="checkbox" id="facilities-trash" name="facilities-tasks">
+                                <label for="facilities-trash">إخراج القمامة</label>
+                            </div>
+                            <div class="task-item">
+                                <input type="checkbox" id="facilities-arrange" name="facilities-tasks">
+                                <label for="facilities-arrange">ترتيب الأثاث</label>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             
             <div class="action-buttons">
-                <button id="save-schedule" class="btn btn-accent"><i class="fas fa-save"></i> حفظ الجدول والمهام</button>
+                <button id="save-schedule" class="btn btn-secondary"><i class="fas fa-save"></i> حفظ الجدول والمهام</button>
+                <button id="mark-completed" class="btn"><i class="fas fa-check-circle"></i> تسجيل المهام المكتملة</button>
             </div>
             
-            <div style="margin-top: 2rem; text-align: center; color: #6c757d; font-size: 0.9rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
-                <p><i class="fas fa-database"></i> البيانات مخزنة على السحابة - يمكنك الوصول إليها من أي جهاز</p>
+            <div class="history-section">
+                <h3><i class="fas fa-history"></i> سجل التنظيف</h3>
+                <div id="cleaning-history">
+                    <!-- سيتم ملؤها بالجافاسكريبت -->
+                </div>
             </div>
         </div>
     </div>
     
     <footer>
-        <div class="container footer-content">
-            <div>
-                <p>تم التطوير بواسطة سعد</p>
-            </div>
-            <div>
-                <p>نظام إدارة تنظيف الشقة &copy; 2023</p>
-            </div>
+        <div class="container">
+            <p>نظام إدارة تنظيف الشقة &copy; 2025 - تم التطوير بواسطة Baqer</p>
         </div>
     </footer>
 
     <script>
+        // 🔧 تكوين Firebase - استبدل هذه البيانات ببيانات مشروعك
+        const firebaseConfig = {
+            apiKey: "AIzaSyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            authDomain: "your-project.firebaseapp.com",
+            databaseURL: "https://your-project-default-rtdb.firebaseio.com",
+            projectId: "your-project",
+            storageBucket: "your-project.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef123456"
+        };
+
+        // تهيئة Firebase
+        let database;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            database = firebase.database();
+            document.getElementById('db-status').style.display = 'block';
+        } catch (error) {
+            console.log('Firebase not configured, using local storage');
+            document.getElementById('db-status').className = 'db-status status-offline';
+            document.getElementById('db-status').innerHTML = '<i class="fas fa-database"></i> غير متصل بالسحابة - استخدام التخزين المحلي';
+            document.getElementById('db-status').style.display = 'block';
+        }
+
         // بيانات المستخدمين
         const users = [
             { id: 1, name: "خالد", email: "khaled@example.com" },
@@ -584,6 +633,9 @@
         const logoutBtn = document.getElementById('logout');
         const reminderNotification = document.getElementById('reminder-notification');
         const reminderDetails = document.getElementById('reminder-details');
+        const markCompletedBtn = document.getElementById('mark-completed');
+        const cleaningHistoryContainer = document.getElementById('cleaning-history');
+        const dbStatus = document.getElementById('db-status');
         
         // تهيئة أيام الأسبوع في الواجهة
         function initializeDaySelectors() {
@@ -625,11 +677,8 @@
                 // عرض شاشة التحميل
                 showLoading();
                 
-                // محاكاة تحميل البيانات (في النسخة الحقيقية سيتم الاتصال بقاعدة البيانات)
-                setTimeout(() => {
-                    // تحميل البيانات من localStorage (بدلاً من قاعدة البيانات)
-                    loadUserData(user.id);
-                }, 1500);
+                // تحميل البيانات من Firebase أو localStorage
+                loadUserData(user.id);
             } else {
                 alert('البريد الإلكتروني غير مسجل في النظام');
             }
@@ -648,17 +697,43 @@
         }
         
         // تحميل بيانات المستخدم
-        function loadUserData(userId) {
-            // في هذه النسخة، نستخدم localStorage بدلاً من قاعدة البيانات
-            const userData = JSON.parse(localStorage.getItem(`userData_${userId}`)) || {};
-            
-            // عرض لوحة التحكم
-            showDashboard(userId, userData);
-            hideLoading();
+        async function loadUserData(userId) {
+            try {
+                if (database) {
+                    // استخدام Firebase
+                    const userRef = database.ref('users/' + userId);
+                    const snapshot = await userRef.once('value');
+                    const userData = snapshot.val() || {};
+                    
+                    // تحميل السجل
+                    const historyRef = database.ref('cleaningHistory').orderByChild('userId').equalTo(userId);
+                    const historySnapshot = await historyRef.once('value');
+                    const userHistory = [];
+                    
+                    historySnapshot.forEach(childSnapshot => {
+                        userHistory.push(childSnapshot.val());
+                    });
+                    
+                    showDashboard(userId, userData, userHistory);
+                } else {
+                    // استخدام localStorage
+                    const userData = JSON.parse(localStorage.getItem(`userData_${userId}`)) || {};
+                    const userHistory = JSON.parse(localStorage.getItem(`userHistory_${userId}`)) || [];
+                    showDashboard(userId, userData, userHistory);
+                }
+            } catch (error) {
+                console.error('Error loading data:', error);
+                // استخدام localStorage كبديل
+                const userData = JSON.parse(localStorage.getItem(`userData_${userId}`)) || {};
+                const userHistory = JSON.parse(localStorage.getItem(`userHistory_${userId}`)) || [];
+                showDashboard(userId, userData, userHistory);
+            } finally {
+                hideLoading();
+            }
         }
         
         // عرض لوحة التحكم
-        function showDashboard(userId, userData) {
+        function showDashboard(userId, userData, userHistory) {
             authSection.style.display = 'none';
             dashboard.style.display = 'block';
             
@@ -674,6 +749,9 @@
             
             // التحقق من المهام القادمة
             checkUpcomingTasks(userData);
+            
+            // تحميل سجل التنظيف
+            loadCleaningHistory(userHistory);
         }
         
         // تحميل جدول المستخدم
@@ -704,20 +782,28 @@
                 });
             }
             
-            // تحديد المهام المكتملة للمطبخ
-            if (userData.tasks && userData.tasks.kitchen) {
-                document.getElementById('kitchen-floor').checked = userData.tasks.kitchen.floor || false;
-                document.getElementById('kitchen-table').checked = userData.tasks.kitchen.table || false;
-                document.getElementById('kitchen-stove').checked = userData.tasks.kitchen.stove || false;
-                document.getElementById('kitchen-sink').checked = userData.tasks.kitchen.sink || false;
-            }
-            
-            // تحديد المهام المكتملة للحمام
-            if (userData.tasks && userData.tasks.bathroom) {
-                document.getElementById('bathroom-floor').checked = userData.tasks.bathroom.floor || false;
-                document.getElementById('bathroom-sink').checked = userData.tasks.bathroom.sink || false;
-                document.getElementById('bathroom-toilet').checked = userData.tasks.bathroom.toilet || false;
-                document.getElementById('bathroom-mirror').checked = userData.tasks.bathroom.mirror || false;
+            // تحديد المهام المكتملة
+            if (userData.tasks) {
+                if (userData.tasks.kitchen) {
+                    document.getElementById('kitchen-floor').checked = userData.tasks.kitchen.floor || false;
+                    document.getElementById('kitchen-table').checked = userData.tasks.kitchen.table || false;
+                    document.getElementById('kitchen-stove').checked = userData.tasks.kitchen.stove || false;
+                    document.getElementById('kitchen-sink').checked = userData.tasks.kitchen.sink || false;
+                }
+                
+                if (userData.tasks.bathroom) {
+                    document.getElementById('bathroom-floor').checked = userData.tasks.bathroom.floor || false;
+                    document.getElementById('bathroom-sink').checked = userData.tasks.bathroom.sink || false;
+                    document.getElementById('bathroom-toilet').checked = userData.tasks.bathroom.toilet || false;
+                    document.getElementById('bathroom-mirror').checked = userData.tasks.bathroom.mirror || false;
+                }
+                
+                if (userData.tasks.facilities) {
+                    document.getElementById('facilities-floor').checked = userData.tasks.facilities.floor || false;
+                    document.getElementById('facilities-dust').checked = userData.tasks.facilities.dust || false;
+                    document.getElementById('facilities-trash').checked = userData.tasks.facilities.trash || false;
+                    document.getElementById('facilities-arrange').checked = userData.tasks.facilities.arrange || false;
+                }
             }
         }
         
@@ -746,7 +832,7 @@
         }
         
         // حفظ الجدول
-        saveScheduleBtn.addEventListener('click', function() {
+        saveScheduleBtn.addEventListener('click', async function() {
             const currentUser = JSON.parse(localStorage.getItem('currentUser'));
             if (!currentUser) return;
             
@@ -768,7 +854,7 @@
                 selectedFacilitiesDays.push(option.dataset.day);
             });
             
-            // جمع المهام المحددة للمطبخ
+            // جمع المهام المحددة
             const kitchenTasks = {
                 floor: document.getElementById('kitchen-floor').checked,
                 table: document.getElementById('kitchen-table').checked,
@@ -776,12 +862,18 @@
                 sink: document.getElementById('kitchen-sink').checked
             };
             
-            // جمع المهام المحددة للحمام
             const bathroomTasks = {
                 floor: document.getElementById('bathroom-floor').checked,
                 sink: document.getElementById('bathroom-sink').checked,
                 toilet: document.getElementById('bathroom-toilet').checked,
                 mirror: document.getElementById('bathroom-mirror').checked
+            };
+            
+            const facilitiesTasks = {
+                floor: document.getElementById('facilities-floor').checked,
+                dust: document.getElementById('facilities-dust').checked,
+                trash: document.getElementById('facilities-trash').checked,
+                arrange: document.getElementById('facilities-arrange').checked
             };
             
             // تجهيز البيانات للحفظ
@@ -791,18 +883,101 @@
                 facilities: selectedFacilitiesDays,
                 tasks: {
                     kitchen: kitchenTasks,
-                    bathroom: bathroomTasks
+                    bathroom: bathroomTasks,
+                    facilities: facilitiesTasks
                 },
                 lastUpdated: new Date().toISOString()
             };
             
-            // حفظ البيانات في localStorage (بدلاً من قاعدة البيانات)
-            localStorage.setItem(`userData_${currentUser.id}`, JSON.stringify(userData));
+            try {
+                showLoading();
+                
+                if (database) {
+                    // حفظ في Firebase
+                    await database.ref('users/' + currentUser.id).set(userData);
+                    dbStatus.className = 'db-status status-online';
+                    dbStatus.innerHTML = '<i class="fas fa-database"></i> تم الحفظ في قاعدة البيانات السحابية';
+                } else {
+                    // حفظ في localStorage
+                    localStorage.setItem(`userData_${currentUser.id}`, JSON.stringify(userData));
+                    dbStatus.className = 'db-status status-offline';
+                    dbStatus.innerHTML = '<i class="fas fa-database"></i> تم الحفظ محلياً (غير متصل بالسحابة)';
+                }
+                
+                alert('تم حفظ الجدول والمهام بنجاح!');
+                
+                // التحقق من المهام القادمة بعد الحفظ
+                checkUpcomingTasks(userData);
+            } catch (error) {
+                console.error('Error saving data:', error);
+                alert('حدث خطأ أثناء حفظ البيانات');
+            } finally {
+                hideLoading();
+            }
+        });
+        
+        // تسجيل المهام المكتملة
+        markCompletedBtn.addEventListener('click', async function() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser) return;
             
-            alert('تم حفظ الجدول والمهام بنجاح!');
+            const today = new Date();
+            const dateString = today.toLocaleDateString('ar-EG');
+            const timestamp = new Date().getTime();
             
-            // التحقق من المهام القادمة بعد الحفظ
-            checkUpcomingTasks(userData);
+            // جمع المهام المكتملة
+            const completedTasks = [];
+            
+            if (document.getElementById('kitchen-floor').checked) completedTasks.push('تنظيف أرضية المطبخ');
+            if (document.getElementById('kitchen-table').checked) completedTasks.push('تنظيف طاولة المطبخ');
+            if (document.getElementById('kitchen-stove').checked) completedTasks.push('تنظيف الطباخ');
+            if (document.getElementById('kitchen-sink').checked) completedTasks.push('تنظيف حوض المطبخ');
+            
+            if (document.getElementById('bathroom-floor').checked) completedTasks.push('تنظيف أرضية الحمام');
+            if (document.getElementById('bathroom-sink').checked) completedTasks.push('تنظيف حوض الحمام');
+            if (document.getElementById('bathroom-toilet').checked) completedTasks.push('تنظيف المرحاض');
+            if (document.getElementById('bathroom-mirror').checked) completedTasks.push('تنظيف مرآة الحمام');
+            
+            if (document.getElementById('facilities-floor').checked) completedTasks.push('كنس أرضية المرافق');
+            if (document.getElementById('facilities-dust').checked) completedTasks.push('إزالة الغبار من المرافق');
+            if (document.getElementById('facilities-trash').checked) completedTasks.push('إخراج القمامة');
+            if (document.getElementById('facilities-arrange').checked) completedTasks.push('ترتيب أثاث المرافق');
+            
+            if (completedTasks.length > 0) {
+                try {
+                    showLoading();
+                    
+                    const historyRecord = {
+                        userId: currentUser.id,
+                        date: dateString,
+                        tasks: completedTasks,
+                        status: 'completed',
+                        timestamp: timestamp
+                    };
+                    
+                    if (database) {
+                        // حفظ في Firebase
+                        await database.ref('cleaningHistory').push(historyRecord);
+                    } else {
+                        // حفظ في localStorage
+                        const userHistory = JSON.parse(localStorage.getItem(`userHistory_${currentUser.id}`)) || [];
+                        userHistory.unshift(historyRecord);
+                        localStorage.setItem(`userHistory_${currentUser.id}`, JSON.stringify(userHistory));
+                    }
+                    
+                    // إعادة تحميل السجل
+                    loadUserData(currentUser.id);
+                    
+                    alert(`تم تسجيل ${completedTasks.length} مهمة مكتملة بنجاح!`);
+                } catch (error) {
+                    console.error('Error saving history:', error);
+                    alert('حدث خطأ أثناء تسجيل المهام المكتملة');
+                } finally {
+                    hideLoading();
+                }
+            } else {
+                alert('لم تقم بتحديد أي مهام مكتملة');
+            }
         });
         
         // تسجيل الخروج
@@ -845,6 +1020,34 @@
             }
         }
         
+        // تحميل سجل التنظيف
+        function loadCleaningHistory(userHistory) {
+            if (!userHistory || userHistory.length === 0) {
+                cleaningHistoryContainer.innerHTML = '<p>لا توجد سجلات تنظيف سابقة</p>';
+                return;
+            }
+            
+            // ترتيب السجل من الأحدث إلى الأقدم
+            userHistory.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+            
+            cleaningHistoryContainer.innerHTML = '';
+            
+            userHistory.forEach(record => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                
+                const tasksList = record.tasks.map(task => `<div>${task}</div>`).join('');
+                
+                historyItem.innerHTML = `
+                    <div class="history-date">${record.date}</div>
+                    <div class="history-task">${tasksList}</div>
+                    <div class="history-status status-completed">مكتمل</div>
+                `;
+                
+                cleaningHistoryContainer.appendChild(historyItem);
+            });
+        }
+        
         // التحقق من تسجيل الدخول عند تحميل الصفحة
         document.addEventListener('DOMContentLoaded', function() {
             initializeDaySelectors();
@@ -852,9 +1055,7 @@
             const currentUser = JSON.parse(localStorage.getItem('currentUser'));
             if (currentUser) {
                 showLoading();
-                setTimeout(() => {
-                    loadUserData(currentUser.id);
-                }, 1000);
+                loadUserData(currentUser.id);
             }
         });
     </script>
