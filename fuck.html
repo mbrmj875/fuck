@@ -8,20 +8,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
     
     <!-- إضافة Firebase SDK -->
-    <script type="module">
+<!-- إضافة Firebase SDK -->
+<!-- إضافة Firebase SDK -->
+<script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
     import { getDatabase, ref, set, get, update, push, query, orderByChild, equalTo } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
-    // 🔧 تكوين Firebase - استخدم التكوين الجديد
-const firebaseConfig = {
-  apiKey: "AIzaSyCLu_BFpzncRewcKV1qMrI9LYE6lAhoTNw",
-  authDomain: "fuck-3c32a.firebaseapp.com",
-  projectId: "fuck-3c32a",
-  storageBucket: "fuck-3c32a.firebasestorage.app",
-  messagingSenderId: "344806495339",
-  appId: "1:344806495339:web:884d418af451d68dc3cd2e"
-};
+    // 🔧 تكوين Firebase - مع databaseURL الصحيح لمنطقة europe-west1
+    const firebaseConfig = {
+        apiKey: "AIzaSyCLu_BFpzncRewcKV1qMrI9LYE6lAhoTNw",
+        authDomain: "fuck-3c32a.firebaseapp.com",
+        databaseURL: "https://fuck-3c32a-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "fuck-3c32a",
+        storageBucket: "fuck-3c32a.firebasestorage.app",
+        messagingSenderId: "344806495339",
+        appId: "1:344806495339:web:884d418af451d68dc3cd2e"
+    };
 
     // تهيئة Firebase
     const app = initializeApp(firebaseConfig);
@@ -41,6 +44,7 @@ const firebaseConfig = {
     };
 
     console.log('✅ Firebase initialized successfully');
+    console.log('🌍 Database region: europe-west1');
 </script>
     
     <style>
@@ -1493,6 +1497,14 @@ const firebaseConfig = {
 
         // بدء التطبيق
         document.addEventListener('DOMContentLoaded', initializeApp);
-    </script>
+   
+    setTimeout(function() {
+        document.getElementById('loading-section').style.display = 'none';
+        document.getElementById('auth-section').style.display = 'flex';
+    }, 3000);
+</script>
 </body>
 </html>
+
+
+
