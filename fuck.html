@@ -613,6 +613,7 @@
                 <h1>نظام إدارة تنظيف الشقة</h1>
             </div>
             <p>نظام متكامل لإدارة مهام التنظيف بين أفراد الشقة</p>
+             <p>   بإدارة معالي الامير محمد ابن سلمان    </p>
         </div>
     </header>
     
@@ -771,10 +772,7 @@
                                 <input type="checkbox" id="bathroom-sink" name="bathroom-tasks">
                                 <label for="bathroom-sink">تنظيف الحوض</label>
                             </div>
-                            <div class="task-item">
-                                <input type="checkbox" id="bathroom-toilet" name="bathroom-tasks">
-                                <label for="bathroom-toilet">تنظيف المرحاض</label>
-                            </div>
+                    
                             <div class="task-item">
                                 <input type="checkbox" id="bathroom-mirror" name="bathroom-tasks">
                                 <label for="bathroom-mirror">تنظيف المرآة</label>
@@ -793,24 +791,10 @@
                     
                     <div class="cleaning-details">
                         <h4><i class="fas fa-tasks"></i> تفاصيل تنظيف المرافق:</h4>
-                        <div class="task-list">
-                            <div class="task-item">
-                                <input type="checkbox" id="facilities-floor" name="facilities-tasks">
-                                <label for="facilities-floor">كنس الأرضية</label>
+                    <div class="task-item">
+                                <input type="checkbox" id="bathroom-toilet" name="bathroom-tasks">
+                                <label for="bathroom-toilet">تنظيف المرحاض</label>
                             </div>
-                            <div class="task-item">
-                                <input type="checkbox" id="facilities-dust" name="facilities-tasks">
-                                <label for="facilities-dust">إزالة الغبار</label>
-                            </div>
-                            <div class="task-item">
-                                <input type="checkbox" id="facilities-trash" name="facilities-tasks">
-                                <label for="facilities-trash">إخراج القمامة</label>
-                            </div>
-                            <div class="task-item">
-                                <input type="checkbox" id="facilities-arrange" name="facilities-tasks">
-                                <label for="facilities-arrange">ترتيب الأثاث</label>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -835,673 +819,949 @@
     
     <footer>
         <div class="container">
-            <p>نظام إدارة تنظيف الشقة &copy; 2025 - تم التطوير بواسطة Baqer</p>
+            <p>نظام إدارة تنظيف الشقة &copy; 2025 -  تم التطوير بواسطة تاج راسكمBaqer</p>
         </div>
     </footer>
 
-    <script>
-        // أيام الأسبوع
-        const daysOfWeek = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+   <script>
+    // أيام الأسبوع
+    const daysOfWeek = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+    
+    // عناصر DOM
+    const authSection = document.getElementById('auth-section');
+    const loadingSection = document.getElementById('loading-section');
+    const dashboard = document.getElementById('dashboard');
+
+    // 🔧 كود بدء التشغيل الآمن
+    function startApp() {
+        console.log('🚀 بدء تشغيل التطبيق...');
         
-        // عناصر DOM
-        const authSection = document.getElementById('auth-section');
-        const loadingSection = document.getElementById('loading-section');
-        const dashboard = document.getElementById('dashboard');
-        const loginForm = document.getElementById('loginForm');
-        const registerForm = document.getElementById('registerForm');
+        // التحقق من تهيئة Firebase
+        if (!window.firebaseAuth || !window.firebaseDatabase) {
+            console.error('❌ Firebase غير مهيء بشكل صحيح');
+            setTimeout(() => {
+                loadingSection.style.display = 'none';
+                authSection.style.display = 'flex';
+            }, 1000);
+            return;
+        }
+        
+        initializeApp();
+    }
+
+
+    // 🔧 تحسينات إضافية للواجهة
+function enhanceUI() {
+    // إضافة مؤشر حفظ
+    const saveButton = document.getElementById('save-schedule');
+    if (saveButton) {
+        saveButton.innerHTML = `
+            <i class="fas fa-save"></i> 
+            <span class="btn-text">حفظ الجدول والمهام</span>
+            <span class="btn-loading" style="display: none;">
+                <i class="fas fa-spinner fa-spin"></i> جاري الحفظ...
+            </span>
+        `;
+    }
+    
+    // إضافة مؤشر للمهام المكتملة
+    const completeButton = document.getElementById('mark-completed');
+    if (completeButton) {
+        completeButton.innerHTML = `
+            <i class="fas fa-check-circle"></i> 
+            <span class="btn-text">تسجيل المهام المكتملة</span>
+            <span class="btn-loading" style="display: none;">
+                <i class="fas fa-spinner fa-spin"></i> جاري التسجيل...
+            </span>
+        `;
+    }
+}
+
+// تحديث دالة setupEventListeners
+function setupEventListeners() {
+    // ... الكود الحالي ...
+    
+    // تحسينات إضافية
+    enhanceUI();
+}
+
+// فحص البيانات المحفوظة في Firebase
+async function checkSavedData() {
+    const userId = window.firebaseAuth.currentUser.uid;
+    if (!userId) return;
+    
+    try {
+        const userRef = window.firebaseFunctions.ref(window.firebaseDatabase, 'users/' + userId);
+        const snapshot = await window.firebaseFunctions.get(userRef);
+        const userData = snapshot.val();
+        
+        console.log('🔍 فحص البيانات المحفوظة:', userData);
+        
+        if (userData) {
+            console.log('📅 الجدول المحفوظ:', userData.schedule);
+            console.log('✅ المهام المحفوظة:', userData.tasks);
+            console.log('🕒 آخر تحديث:', userData.lastUpdated);
+        } else {
+            console.log('⚠️ لا توجد بيانات محفوظة للمستخدم');
+        }
+        
+    } catch (error) {
+        console.error('❌ خطأ في فحص البيانات:', error);
+    }
+}
+
+// استدعاء فحص البيانات بعد تحميل لوحة التحكم
+function showDashboard(userData, userHistory) {
+    // ... الكود الحالي ...
+    
+    // فحص البيانات المحفوظة
+    setTimeout(() => {
+        checkSavedData();
+    }, 1000);
+}
+    // تهيئة التطبيق
+    function initializeApp() {
+        console.log('🔧 تهيئة التطبيق...');
+        
+        try {
+            initializeDaySelectors();
+            setupEventListeners();
+            checkAuthState();
+        } catch (error) {
+            console.error('❌ خطأ في التهيئة:', error);
+            showLoginForm();
+        }
+    }
+
+    // تهيئة أيام الأسبوع في الواجهة
+    function initializeDaySelectors() {
+        const kitchenDays = document.getElementById('kitchen-days');
+        const bathroomDays = document.getElementById('bathroom-days');
+        const facilitiesDays = document.getElementById('facilities-days');
+        
+        // مسح المحتوى القديم أولاً
+        kitchenDays.innerHTML = '';
+        bathroomDays.innerHTML = '';
+        facilitiesDays.innerHTML = '';
+        
+        daysOfWeek.forEach(day => {
+            // للمطبخ (يومي)
+            const kitchenDayOption = document.createElement('div');
+            kitchenDayOption.className = 'day-option';
+            kitchenDayOption.textContent = day;
+            kitchenDayOption.dataset.day = day;
+            kitchenDays.appendChild(kitchenDayOption);
+            
+            // للحمام (كل 3 أيام)
+            const bathroomDayOption = document.createElement('div');
+            bathroomDayOption.className = 'day-option';
+            bathroomDayOption.textContent = day;
+            bathroomDayOption.dataset.day = day;
+            bathroomDays.appendChild(bathroomDayOption);
+            
+            // للمرافق (كل 3 أيام)
+            const facilitiesDayOption = document.createElement('div');
+            facilitiesDayOption.className = 'day-option';
+            facilitiesDayOption.textContent = day;
+            facilitiesDayOption.dataset.day = day;
+            facilitiesDays.appendChild(facilitiesDayOption);
+        });
+    }
+
+    // إعداد مستمعي الأحداث
+    function setupEventListeners() {
         const loginTab = document.getElementById('login-tab');
         const registerTab = document.getElementById('register-tab');
         const loginTabReg = document.getElementById('login-tab-reg');
         const registerTabReg = document.getElementById('register-tab-reg');
-        const loginFormContainer = document.getElementById('login-form');
-        const registerFormContainer = document.getElementById('register-form');
-        const userName = document.getElementById('user-name');
-        const userEmail = document.getElementById('user-email');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const resetPasswordLink = document.getElementById('reset-password-link');
+        const logoutBtn = document.getElementById('logout');
+        const saveScheduleBtn = document.getElementById('save-schedule');
+        const markCompletedBtn = document.getElementById('mark-completed');
+        
+        // أحداث علامات التبويب
+        if (loginTab) loginTab.addEventListener('click', showLoginForm);
+        if (registerTab) registerTab.addEventListener('click', showRegisterForm);
+        if (loginTabReg) loginTabReg.addEventListener('click', showLoginForm);
+        if (registerTabReg) registerTabReg.addEventListener('click', showRegisterForm);
+        
+        // أحداث النماذج
+        if (loginForm) loginForm.addEventListener('submit', handleLogin);
+        if (registerForm) registerForm.addEventListener('submit', handleRegister);
+        if (resetPasswordLink) resetPasswordLink.addEventListener('click', handlePasswordReset);
+        
+        // أحداث الأزرار
+        if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
+        if (saveScheduleBtn) saveScheduleBtn.addEventListener('click', saveSchedule);
+        if (markCompletedBtn) markCompletedBtn.addEventListener('click', markTasksCompleted);
+        
+        // أحداث اختيار الأيام
+        addDaySelectionEvents();
+    }
+
+    // إضافة أحداث اختيار الأيام
+    function addDaySelectionEvents() {
         const kitchenDays = document.getElementById('kitchen-days');
         const bathroomDays = document.getElementById('bathroom-days');
         const facilitiesDays = document.getElementById('facilities-days');
-        const saveScheduleBtn = document.getElementById('save-schedule');
-        const logoutBtn = document.getElementById('logout');
-        const reminderNotification = document.getElementById('reminder-notification');
-        const reminderDetails = document.getElementById('reminder-details');
-        const markCompletedBtn = document.getElementById('mark-completed');
-        const cleaningHistoryContainer = document.getElementById('cleaning-history');
-        const dbStatus = document.getElementById('db-status');
+        
+        if (kitchenDays) {
+            kitchenDays.querySelectorAll('.day-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    this.classList.toggle('selected');
+                });
+            });
+        }
+        
+        if (bathroomDays) {
+            bathroomDays.querySelectorAll('.day-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    this.classList.toggle('selected');
+                });
+            });
+        }
+        
+        if (facilitiesDays) {
+            facilitiesDays.querySelectorAll('.day-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    this.classList.toggle('selected');
+                });
+            });
+        }
+    }
+
+    // عرض نموذج تسجيل الدخول
+    function showLoginForm() {
+        const loginFormContainer = document.getElementById('login-form');
+        const registerFormContainer = document.getElementById('register-form');
+        const loginTab = document.getElementById('login-tab');
+        const registerTab = document.getElementById('register-tab');
+        
+        hideLoading();
+        authSection.style.display = 'flex';
+        dashboard.style.display = 'none';
+        if (loginFormContainer) loginFormContainer.style.display = 'block';
+        if (registerFormContainer) registerFormContainer.style.display = 'none';
+        if (loginTab) loginTab.classList.add('active');
+        if (registerTab) registerTab.classList.remove('active');
+        clearMessages();
+    }
+
+    // عرض نموذج إنشاء حساب
+    function showRegisterForm() {
+        const loginFormContainer = document.getElementById('login-form');
+        const registerFormContainer = document.getElementById('register-form');
+        const loginTab = document.getElementById('login-tab');
+        const registerTab = document.getElementById('register-tab');
+        
+        hideLoading();
+        authSection.style.display = 'flex';
+        dashboard.style.display = 'none';
+        if (loginFormContainer) loginFormContainer.style.display = 'none';
+        if (registerFormContainer) registerFormContainer.style.display = 'block';
+        if (registerTab) registerTab.classList.add('active');
+        if (loginTab) loginTab.classList.remove('active');
+        clearMessages();
+    }
+
+    // مسح الرسائل
+    function clearMessages() {
         const loginError = document.getElementById('login-error');
         const registerError = document.getElementById('register-error');
         const loginSuccess = document.getElementById('login-success');
         const registerSuccess = document.getElementById('register-success');
-        const resetPasswordLink = document.getElementById('reset-password-link');
+        
+        if (loginError) loginError.style.display = 'none';
+        if (registerError) registerError.style.display = 'none';
+        if (loginSuccess) loginSuccess.style.display = 'none';
+        if (registerSuccess) registerSuccess.style.display = 'none';
+    }
+
+    // إخفاء شاشة التحميل
+    function hideLoading() {
+        if (loadingSection) loadingSection.style.display = 'none';
+    }
+
+    // التحقق من حالة المصادقة
+    function checkAuthState() {
+        if (!window.firebaseAuth) {
+            console.error('❌ Firebase Auth غير متوفر');
+            showLoginForm();
+            return;
+        }
+        
+        window.firebaseFunctions.onAuthStateChanged(window.firebaseAuth, (user) => {
+            console.log('👤 حالة المصادقة:', user ? 'مسجل دخول' : 'غير مسجل');
+            
+            if (user) {
+                console.log('✅ مستخدم مسجل الدخول:', user.email);
+                loadUserData(user.uid);
+            } else {
+                console.log('🚪 لا يوجد مستخدم مسجل الدخول');
+                showLoginForm();
+            }
+        });
+    }
+
+    // معالجة تسجيل الدخول
+    async function handleLogin(e) {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const loginError = document.getElementById('login-error');
         const loginBtn = document.getElementById('login-btn');
+        
+        if (!email || !password) {
+            showError(loginError, 'يرجى ملء جميع الحقول');
+            return;
+        }
+        
+        try {
+            setButtonLoading(loginBtn, true);
+            clearMessages();
+            
+            const userCredential = await window.firebaseFunctions.signInWithEmailAndPassword(
+                window.firebaseAuth, email, password
+            );
+            
+            const user = userCredential.user;
+            console.log('✅ تسجيل الدخول ناجح:', user.email);
+            await loadUserData(user.uid);
+            
+        } catch (error) {
+            setButtonLoading(loginBtn, false);
+            showError(loginError, getAuthErrorMessage(error.code));
+            console.error('❌ خطأ في تسجيل الدخول:', error);
+        }
+    }
+
+    // معالجة إنشاء حساب
+    async function handleRegister(e) {
+        e.preventDefault();
+        const name = document.getElementById('reg-name').value;
+        const email = document.getElementById('reg-email').value;
+        const password = document.getElementById('reg-password').value;
+        const confirmPassword = document.getElementById('reg-confirm-password').value;
+        const registerError = document.getElementById('register-error');
+        const registerSuccess = document.getElementById('register-success');
         const registerBtn = document.getElementById('register-btn');
-
-        // تهيئة التطبيق
-        function initializeApp() {
-            initializeDaySelectors();
-            setupEventListeners();
-            checkAuthState();
+        
+        if (!name || !email || !password || !confirmPassword) {
+            showError(registerError, 'يرجى ملء جميع الحقول');
+            return;
         }
-
-        // تهيئة أيام الأسبوع في الواجهة
-        function initializeDaySelectors() {
-            daysOfWeek.forEach(day => {
-                // للمطبخ (يومي)
-                const kitchenDayOption = document.createElement('div');
-                kitchenDayOption.className = 'day-option';
-                kitchenDayOption.textContent = day;
-                kitchenDayOption.dataset.day = day;
-                kitchenDays.appendChild(kitchenDayOption);
-                
-                // للحمام (كل 3 أيام)
-                const bathroomDayOption = document.createElement('div');
-                bathroomDayOption.className = 'day-option';
-                bathroomDayOption.textContent = day;
-                bathroomDayOption.dataset.day = day;
-                bathroomDays.appendChild(bathroomDayOption);
-                
-                // للمرافق (كل 3 أيام)
-                const facilitiesDayOption = document.createElement('div');
-                facilitiesDayOption.className = 'day-option';
-                facilitiesDayOption.textContent = day;
-                facilitiesDayOption.dataset.day = day;
-                facilitiesDays.appendChild(facilitiesDayOption);
-            });
+        
+        if (password !== confirmPassword) {
+            showError(registerError, 'كلمتا المرور غير متطابقتين');
+            return;
         }
-
-        // إعداد مستمعي الأحداث
-        function setupEventListeners() {
-            // أحداث علامات التبويب
-            loginTab.addEventListener('click', showLoginForm);
-            registerTab.addEventListener('click', showRegisterForm);
-            loginTabReg.addEventListener('click', showLoginForm);
-            registerTabReg.addEventListener('click', showRegisterForm);
-            
-            // أحداث النماذج
-            loginForm.addEventListener('submit', handleLogin);
-            registerForm.addEventListener('submit', handleRegister);
-            
-            // أحداث الأزرار
-            logoutBtn.addEventListener('click', handleLogout);
-            saveScheduleBtn.addEventListener('click', saveSchedule);
-            markCompletedBtn.addEventListener('click', markTasksCompleted);
-            resetPasswordLink.addEventListener('click', handlePasswordReset);
-            
-            // أحداث اختيار الأيام
-            addDaySelectionEvents();
+        
+        if (password.length < 6) {
+            showError(registerError, 'كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+            return;
         }
-
-        // عرض نموذج تسجيل الدخول
-        function showLoginForm() {
-            loginFormContainer.style.display = 'block';
-            registerFormContainer.style.display = 'none';
-            loginTab.classList.add('active');
-            registerTab.classList.remove('active');
+        
+        try {
+            setButtonLoading(registerBtn, true);
             clearMessages();
-        }
-
-        // عرض نموذج إنشاء حساب
-        function showRegisterForm() {
-            loginFormContainer.style.display = 'none';
-            registerFormContainer.style.display = 'block';
-            registerTab.classList.add('active');
-            loginTab.classList.remove('active');
-            clearMessages();
-        }
-
-        // مسح الرسائل
-        function clearMessages() {
-            loginError.style.display = 'none';
-            registerError.style.display = 'none';
-            loginSuccess.style.display = 'none';
-            registerSuccess.style.display = 'none';
-        }
-
-        // عرض حالة التحميل على الزر
-        function setButtonLoading(button, isLoading) {
-            const btnText = button.querySelector('.btn-text');
-            const btnLoading = button.querySelector('.btn-loading');
             
-            if (isLoading) {
-                btnText.style.display = 'none';
-                btnLoading.style.display = 'inline';
-                button.disabled = true;
-            } else {
-                btnText.style.display = 'inline';
-                btnLoading.style.display = 'none';
-                button.disabled = false;
-            }
-        }
-
-        // معالجة تسجيل الدخول
-        async function handleLogin(e) {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+            const userCredential = await window.firebaseFunctions.createUserWithEmailAndPassword(
+                window.firebaseAuth, email, password
+            );
             
-            if (!email || !password) {
-                showError(loginError, 'يرجى ملء جميع الحقول');
-                return;
-            }
+            const user = userCredential.user;
+            console.log('✅ إنشاء حساب ناجح:', user.email);
             
-            try {
-                setButtonLoading(loginBtn, true);
-                clearMessages();
-                
-                const userCredential = await window.firebaseFunctions.signInWithEmailAndPassword(
-                    window.firebaseAuth, email, password
-                );
-                
-                const user = userCredential.user;
-                console.log('✅ تسجيل الدخول ناجح:', user.email);
-                
-                // تحميل بيانات المستخدم
-                await loadUserData(user.uid);
-                
-            } catch (error) {
-                setButtonLoading(loginBtn, false);
-                showError(loginError, getAuthErrorMessage(error.code));
-                console.error('❌ خطأ في تسجيل الدخول:', error);
-            }
-        }
-
-        // معالجة إنشاء حساب
-        async function handleRegister(e) {
-            e.preventDefault();
-            const name = document.getElementById('reg-name').value;
-            const email = document.getElementById('reg-email').value;
-            const password = document.getElementById('reg-password').value;
-            const confirmPassword = document.getElementById('reg-confirm-password').value;
-            
-            // التحقق من البيانات
-            if (!name || !email || !password || !confirmPassword) {
-                showError(registerError, 'يرجى ملء جميع الحقول');
-                return;
-            }
-            
-            if (password !== confirmPassword) {
-                showError(registerError, 'كلمتا المرور غير متطابقتين');
-                return;
-            }
-            
-            if (password.length < 6) {
-                showError(registerError, 'كلمة المرور يجب أن تكون 6 أحرف على الأقل');
-                return;
-            }
-            
-            try {
-                setButtonLoading(registerBtn, true);
-                clearMessages();
-                
-                // إنشاء حساب في Firebase Authentication
-                const userCredential = await window.firebaseFunctions.createUserWithEmailAndPassword(
-                    window.firebaseAuth, email, password
-                );
-                
-                const user = userCredential.user;
-                console.log('✅ إنشاء حساب ناجح:', user.email);
-                
-                // حفظ بيانات المستخدم الإضافية في Realtime Database
-                const userData = {
-                    name: name,
-                    email: email,
-                    createdAt: new Date().toISOString(),
-                    lastLogin: new Date().toISOString()
-                };
-                
-                await window.firebaseFunctions.set(
-                    window.firebaseFunctions.ref(window.firebaseDatabase, 'users/' + user.uid),
-                    userData
-                );
-                
-                showSuccess(registerSuccess, 'تم إنشاء الحساب بنجاح! جاري تسجيل الدخول...');
-                
-                // تحميل بيانات المستخدم بعد إنشاء الحساب
-                setTimeout(() => {
-                    loadUserData(user.uid);
-                }, 2000);
-                
-            } catch (error) {
-                setButtonLoading(registerBtn, false);
-                showError(registerError, getAuthErrorMessage(error.code));
-                console.error('❌ خطأ في إنشاء الحساب:', error);
-            }
-        }
-
-        // معالجة إعادة تعيين كلمة المرور
-        async function handlePasswordReset() {
-            const email = document.getElementById('email').value;
-            
-            if (!email) {
-                showError(loginError, 'يرجى إدخال البريد الإلكتروني أولاً');
-                return;
-            }
-            
-            try {
-                await window.firebaseFunctions.sendPasswordResetEmail(window.firebaseAuth, email);
-                showSuccess(loginSuccess, 'تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني');
-            } catch (error) {
-                showError(loginError, getAuthErrorMessage(error.code));
-            }
-        }
-
-        // تحميل بيانات المستخدم
-        async function loadUserData(userId) {
-            showLoading();
-            
-            try {
-                // جلب بيانات المستخدم من Realtime Database
-                const userRef = window.firebaseFunctions.ref(window.firebaseDatabase, 'users/' + userId);
-                const snapshot = await window.firebaseFunctions.get(userRef);
-                const userData = snapshot.val();
-                
-                // جلب سجل التنظيف
-                const historyRef = window.firebaseFunctions.ref(window.firebaseDatabase, 'cleaningHistory');
-                const historyQuery = window.firebaseFunctions.query(
-                    historyRef, 
-                    window.firebaseFunctions.orderByChild('userId'), 
-                    window.firebaseFunctions.equalTo(userId)
-                );
-                const historySnapshot = await window.firebaseFunctions.get(historyQuery);
-                const userHistory = [];
-                
-                historySnapshot.forEach(childSnapshot => {
-                    userHistory.push(childSnapshot.val());
-                });
-                
-                showDashboard(userData, userHistory);
-                
-            } catch (error) {
-                console.error('❌ خطأ في تحميل البيانات:', error);
-                // عرض لوحة التحكم ببيانات افتراضية في حالة الخطأ
-                const userData = {
-                    name: "مستخدم",
-                    email: window.firebaseAuth.currentUser.email
-                };
-                showDashboard(userData, []);
-            } finally {
-                hideLoading();
-            }
-        }
-
-        // عرض رسالة خطأ
-        function showError(element, message) {
-            element.textContent = message;
-            element.style.display = 'block';
-        }
-
-        // عرض رسالة نجاح
-        function showSuccess(element, message) {
-            element.textContent = message;
-            element.style.display = 'block';
-        }
-
-        // تحويل رمز خطأ Firebase إلى رسالة مفهومة
-        function getAuthErrorMessage(errorCode) {
-            const errorMessages = {
-                'auth/invalid-email': 'البريد الإلكتروني غير صحيح',
-                'auth/user-disabled': 'هذا الحساب معطل',
-                'auth/user-not-found': 'لا يوجد حساب مرتبط بهذا البريد الإلكتروني',
-                'auth/wrong-password': 'كلمة المرور غير صحيحة',
-                'auth/email-already-in-use': 'هذا البريد الإلكتروني مستخدم بالفعل',
-                'auth/weak-password': 'كلمة المرور ضعيفة، يجب أن تكون 6 أحرف على الأقل',
-                'auth/network-request-failed': 'خطأ في الاتصال بالشبكة',
-                'auth/too-many-requests': 'محاولات تسجيل دخول كثيرة، حاول لاحقاً'
+            // حفظ بيانات المستخدم
+            const userData = {
+                name: name,
+                email: email,
+                createdAt: new Date().toISOString(),
+                lastLogin: new Date().toISOString()
             };
             
-            return errorMessages[errorCode] || 'حدث خطأ غير متوقع';
+            await window.firebaseFunctions.set(
+                window.firebaseFunctions.ref(window.firebaseDatabase, 'users/' + user.uid),
+                userData
+            );
+            
+            showSuccess(registerSuccess, 'تم إنشاء الحساب بنجاح! جاري تسجيل الدخول...');
+            
+            setTimeout(() => {
+                loadUserData(user.uid);
+            }, 2000);
+            
+        } catch (error) {
+            setButtonLoading(registerBtn, false);
+            showError(registerError, getAuthErrorMessage(error.code));
+            console.error('❌ خطأ في إنشاء الحساب:', error);
         }
+    }
 
-        // عرض شاشة التحميل
-        function showLoading() {
-            authSection.style.display = 'none';
-            dashboard.style.display = 'none';
-            loadingSection.style.display = 'block';
+   // تحميل بيانات المستخدم - 🔧 الإصلاح النهائي
+async function loadUserData(userId) {
+    showLoading();
+    
+    try {
+        console.log('📂 جاري تحميل بيانات المستخدم:', userId);
+        
+        // جلب بيانات المستخدم من Realtime Database
+        const userRef = window.firebaseFunctions.ref(window.firebaseDatabase, 'users/' + userId);
+        const snapshot = await window.firebaseFunctions.get(userRef);
+        let userData = snapshot.val();
+        
+        console.log('📊 بيانات المستخدم المسترجعة:', userData);
+        
+        if (!userData) {
+            console.log('⚠️ لا توجد بيانات للمستخدم، سيتم استخدام بيانات افتراضية');
+            userData = {
+                name: "مستخدم",
+                email: window.firebaseAuth.currentUser.email
+            };
         }
+        
+        // 🔧 جلب سجل التنظيف - الطريقة المحسنة
+        await loadCleaningHistory(userId);
+        
+        showDashboard(userData);
+        
+    } catch (error) {
+        console.error('❌ خطأ في تحميل البيانات:', error);
+        const userData = {
+            name: "مستخدم",
+            email: window.firebaseAuth.currentUser.email
+        };
+        showDashboard(userData);
+    }
+}
 
-        // إخفاء شاشة التحميل
-        function hideLoading() {
-            loadingSection.style.display = 'none';
+    // عرض لوحة التحكم
+// عرض لوحة التحكم
+function showDashboard(userData) {
+    hideLoading();
+    authSection.style.display = 'none';
+    dashboard.style.display = 'block';
+    
+    const userName = document.getElementById('user-name');
+    const userEmail = document.getElementById('user-email');
+    
+    if (userName) userName.textContent = userData.name || 'مستخدم';
+    if (userEmail) userEmail.textContent = userData.email || window.firebaseAuth.currentUser.email;
+    
+    // تحميل بيانات الجدول والمهام
+    loadUserSchedule(userData);
+    checkUpcomingTasks(userData);
+    
+    console.log('✅ لوحة التحكم مع البيانات المسترجعة');
+}
+    // تحميل جدول المستخدم - 🔧 الإصلاح هنا
+   // تحميل جدول المستخدم - 🔧 الإصلاح المحسن
+async function loadUserSchedule(userData) {
+    console.log('📅 تحميل جدول المستخدم:', userData);
+    
+    const userId = window.firebaseAuth.currentUser.uid;
+    
+    try {
+        // جلب أحدث بيانات المستخدم من Firebase
+        const userRef = window.firebaseFunctions.ref(window.firebaseDatabase, 'users/' + userId);
+        const snapshot = await window.firebaseFunctions.get(userRef);
+        const latestUserData = snapshot.val();
+        
+        console.log('🔄 أحدث بيانات المستخدم:', latestUserData);
+        
+        if (latestUserData && latestUserData.schedule) {
+            console.log('🎯 تطبيق الجدول المحفوظ:', latestUserData.schedule);
+            applyScheduleToUI(latestUserData.schedule);
+        } else {
+            console.log('⚡ استخدام الجدول الافتراضي');
+            const defaultSchedule = {
+                kitchen: ["السبت", "الاثنين", "الأربعاء"],
+                bathroom: ["الأحد", "الثلاثاء"],
+                facilities: ["الاثنين", "الخميس"]
+            };
+            applyScheduleToUI(defaultSchedule);
         }
+        
+        if (latestUserData && latestUserData.tasks) {
+            console.log('✅ تحميل المهام المحفوظة:', latestUserData.tasks);
+            loadTasks(latestUserData.tasks);
+        } else {
+            console.log('⚡ لا توجد مهام محفوظة');
+        }
+        
+    } catch (error) {
+        console.error('❌ خطأ في تحميل الجدول:', error);
+        // استخدام البيانات المحلية كبديل
+        if (userData && userData.schedule) {
+            applyScheduleToUI(userData.schedule);
+            if (userData.tasks) loadTasks(userData.tasks);
+        }
+    }
+}
 
-        // عرض لوحة التحكم
-        function showDashboard(userData, userHistory) {
+    
+    // تطبيق الجدول على الواجهة
+    function applyScheduleToUI(schedule) {
+        const kitchenDays = document.getElementById('kitchen-days');
+        const bathroomDays = document.getElementById('bathroom-days');
+        const facilitiesDays = document.getElementById('facilities-days');
+        
+        if (kitchenDays) {
+            kitchenDays.querySelectorAll('.day-option').forEach(option => {
+                const isSelected = schedule.kitchen && schedule.kitchen.includes(option.dataset.day);
+                option.classList.toggle('selected', isSelected);
+            });
+        }
+        
+        if (bathroomDays) {
+            bathroomDays.querySelectorAll('.day-option').forEach(option => {
+                const isSelected = schedule.bathroom && schedule.bathroom.includes(option.dataset.day);
+                option.classList.toggle('selected', isSelected);
+            });
+        }
+        
+        if (facilitiesDays) {
+            facilitiesDays.querySelectorAll('.day-option').forEach(option => {
+                const isSelected = schedule.facilities && schedule.facilities.includes(option.dataset.day);
+                option.classList.toggle('selected', isSelected);
+            });
+        }
+    }
+
+    // تحميل المهام
+    function loadTasks(tasks) {
+        if (tasks.kitchen) {
+            const kitchenFloor = document.getElementById('kitchen-floor');
+            const kitchenTable = document.getElementById('kitchen-table');
+            const kitchenStove = document.getElementById('kitchen-stove');
+            const kitchenSink = document.getElementById('kitchen-sink');
+            
+            if (kitchenFloor) kitchenFloor.checked = tasks.kitchen.floor || false;
+            if (kitchenTable) kitchenTable.checked = tasks.kitchen.table || false;
+            if (kitchenStove) kitchenStove.checked = tasks.kitchen.stove || false;
+            if (kitchenSink) kitchenSink.checked = tasks.kitchen.sink || false;
+        }
+        
+        if (tasks.bathroom) {
+            const bathroomFloor = document.getElementById('bathroom-floor');
+            const bathroomSink = document.getElementById('bathroom-sink');
+            const bathroomToilet = document.getElementById('bathroom-toilet');
+            const bathroomMirror = document.getElementById('bathroom-mirror');
+            
+            if (bathroomFloor) bathroomFloor.checked = tasks.bathroom.floor || false;
+            if (bathroomSink) bathroomSink.checked = tasks.bathroom.sink || false;
+            if (bathroomToilet) bathroomToilet.checked = tasks.bathroom.toilet || false;
+            if (bathroomMirror) bathroomMirror.checked = tasks.bathroom.mirror || false;
+        }
+        
+        if (tasks.facilities) {
+            const facilitiesFloor = document.getElementById('facilities-floor');
+            const facilitiesDust = document.getElementById('facilities-dust');
+            const facilitiesTrash = document.getElementById('facilities-trash');
+            const facilitiesArrange = document.getElementById('facilities-arrange');
+            
+            if (facilitiesFloor) facilitiesFloor.checked = tasks.facilities.floor || false;
+            if (facilitiesDust) facilitiesDust.checked = tasks.facilities.dust || false;
+            if (facilitiesTrash) facilitiesTrash.checked = tasks.facilities.trash || false;
+            if (facilitiesArrange) facilitiesArrange.checked = tasks.facilities.arrange || false;
+        }
+    }
+
+  // حفظ الجدول - 🔧 الإصدار المحسن
+async function saveSchedule() {
+    const userId = window.firebaseAuth.currentUser.uid;
+    if (!userId) {
+        alert('❌ يجب تسجيل الدخول أولاً');
+        return;
+    }
+    
+    console.log('💾 جاري حفظ الجدول للمستخدم:', userId);
+    showLoading();
+    
+    try {
+        // جمع الأيام المختارة
+        const scheduleData = collectScheduleData();
+        
+        console.log('📊 البيانات المجمعة للحفظ:', scheduleData);
+        
+        // حفظ البيانات في Firebase
+        await window.firebaseFunctions.update(
+            window.firebaseFunctions.ref(window.firebaseDatabase, 'users/' + userId),
+            scheduleData
+        );
+        
+        console.log('✅ تم حفظ البيانات بنجاح في Firebase');
+        
+        // تأكيد الحفظ وإعادة التحميل
+        setTimeout(() => {
             hideLoading();
-            authSection.style.display = 'none';
-            dashboard.style.display = 'block';
+            alert('✅ تم حفظ الجدول والمهام بنجاح!');
             
-            userName.textContent = userData.name || 'مستخدم';
-            userEmail.textContent = userData.email || window.firebaseAuth.currentUser.email;
+            // إعادة تحميل البيانات لرؤية التغييرات
+            loadUserData(userId);
             
-            // تحميل بيانات المستخدم
-            loadUserSchedule(userData);
-            checkUpcomingTasks(userData);
-            loadCleaningHistory(userHistory);
-        }
+        }, 1000);
+        
+    } catch (error) {
+        hideLoading();
+        console.error('❌ خطأ في حفظ البيانات:', error);
+        alert('❌ حدث خطأ أثناء حفظ البيانات: ' + error.message);
+    }
+}
 
-        // تحميل جدول المستخدم
-        function loadUserSchedule(userData) {
-            if (userData.schedule) {
-                applyScheduleToUI(userData.schedule);
-            } else {
-                // جدول افتراضي إذا لم يكن هناك بيانات
-                const defaultSchedule = {
-                    kitchen: ["السبت", "الاثنين", "الأربعاء"],
-                    bathroom: ["الأحد", "الثلاثاء"],
-                    facilities: ["الاثنين", "الخميس"]
-                };
-                applyScheduleToUI(defaultSchedule);
-            }
-            
-            if (userData.tasks) {
-                loadTasks(userData.tasks);
-            }
+// دالة مساعدة لجمع بيانات الجدول
+function collectScheduleData() {
+    // جمع الأيام المختارة
+    const selectedKitchenDays = Array.from(document.querySelectorAll('#kitchen-days .day-option.selected'))
+        .map(option => option.dataset.day);
+    
+    const selectedBathroomDays = Array.from(document.querySelectorAll('#bathroom-days .day-option.selected'))
+        .map(option => option.dataset.day);
+    
+    const selectedFacilitiesDays = Array.from(document.querySelectorAll('#facilities-days .day-option.selected'))
+        .map(option => option.dataset.day);
+    
+    // جمع المهام المحددة
+    const tasksData = {
+        kitchen: {
+            floor: document.getElementById('kitchen-floor')?.checked || false,
+            table: document.getElementById('kitchen-table')?.checked || false,
+            stove: document.getElementById('kitchen-stove')?.checked || false,
+            sink: document.getElementById('kitchen-sink')?.checked || false
+        },
+        bathroom: {
+            floor: document.getElementById('bathroom-floor')?.checked || false,
+            sink: document.getElementById('bathroom-sink')?.checked || false,
+            toilet: document.getElementById('bathroom-toilet')?.checked || false,
+            mirror: document.getElementById('bathroom-mirror')?.checked || false
+        },
+        facilities: {
+            floor: document.getElementById('facilities-floor')?.checked || false,
+            dust: document.getElementById('facilities-dust')?.checked || false,
+            trash: document.getElementById('facilities-trash')?.checked || false,
+            arrange: document.getElementById('facilities-arrange')?.checked || false
         }
+    };
+    
+    return {
+        schedule: {
+            kitchen: selectedKitchenDays,
+            bathroom: selectedBathroomDays,
+            facilities: selectedFacilitiesDays
+        },
+        tasks: tasksData,
+        lastUpdated: new Date().toISOString()
+    };
+}
 
-        // تطبيق الجدول على الواجهة
-        function applyScheduleToUI(schedule) {
-            // تطبيق أيام المطبخ
-            kitchenDays.querySelectorAll('.day-option').forEach(option => {
-                option.classList.toggle('selected', schedule.kitchen?.includes(option.dataset.day));
-            });
-            
-            // تطبيق أيام الحمام
-            bathroomDays.querySelectorAll('.day-option').forEach(option => {
-                option.classList.toggle('selected', schedule.bathroom?.includes(option.dataset.day));
-            });
-            
-            // تطبيق أيام المرافق
-            facilitiesDays.querySelectorAll('.day-option').forEach(option => {
-                option.classList.toggle('selected', schedule.facilities?.includes(option.dataset.day));
-            });
-        }
-
-        // تحميل المهام
-        function loadTasks(tasks) {
-            if (tasks.kitchen) {
-                document.getElementById('kitchen-floor').checked = tasks.kitchen.floor || false;
-                document.getElementById('kitchen-table').checked = tasks.kitchen.table || false;
-                document.getElementById('kitchen-stove').checked = tasks.kitchen.stove || false;
-                document.getElementById('kitchen-sink').checked = tasks.kitchen.sink || false;
-            }
-            
-            if (tasks.bathroom) {
-                document.getElementById('bathroom-floor').checked = tasks.bathroom.floor || false;
-                document.getElementById('bathroom-sink').checked = tasks.bathroom.sink || false;
-                document.getElementById('bathroom-toilet').checked = tasks.bathroom.toilet || false;
-                document.getElementById('bathroom-mirror').checked = tasks.bathroom.mirror || false;
-            }
-            
-            if (tasks.facilities) {
-                document.getElementById('facilities-floor').checked = tasks.facilities.floor || false;
-                document.getElementById('facilities-dust').checked = tasks.facilities.dust || false;
-                document.getElementById('facilities-trash').checked = tasks.facilities.trash || false;
-                document.getElementById('facilities-arrange').checked = tasks.facilities.arrange || false;
-            }
-        }
-
-        // إضافة أحداث اختيار الأيام
-        function addDaySelectionEvents() {
-            kitchenDays.querySelectorAll('.day-option').forEach(option => {
-                option.addEventListener('click', function() {
-                    this.classList.toggle('selected');
-                });
-            });
-            
-            bathroomDays.querySelectorAll('.day-option').forEach(option => {
-                option.addEventListener('click', function() {
-                    this.classList.toggle('selected');
-                });
-            });
-            
-            facilitiesDays.querySelectorAll('.day-option').forEach(option => {
-                option.addEventListener('click', function() {
-                    this.classList.toggle('selected');
-                });
-            });
-        }
-
-        // حفظ الجدول
-        async function saveSchedule() {
-            const userId = window.firebaseAuth.currentUser.uid;
-            if (!userId) return;
-            
-            // جمع الأيام المختارة
-            const selectedKitchenDays = [];
-            kitchenDays.querySelectorAll('.day-option.selected').forEach(option => {
-                selectedKitchenDays.push(option.dataset.day);
-            });
-            
-            const selectedBathroomDays = [];
-            bathroomDays.querySelectorAll('.day-option.selected').forEach(option => {
-                selectedBathroomDays.push(option.dataset.day);
-            });
-            
-            const selectedFacilitiesDays = [];
-            facilitiesDays.querySelectorAll('.day-option.selected').forEach(option => {
-                selectedFacilitiesDays.push(option.dataset.day);
-            });
-            
-            // جمع المهام المحددة
-            const kitchenTasks = {
-                floor: document.getElementById('kitchen-floor').checked,
-                table: document.getElementById('kitchen-table').checked,
-                stove: document.getElementById('kitchen-stove').checked,
-                sink: document.getElementById('kitchen-sink').checked
-            };
-            
-            const bathroomTasks = {
-                floor: document.getElementById('bathroom-floor').checked,
-                sink: document.getElementById('bathroom-sink').checked,
-                toilet: document.getElementById('bathroom-toilet').checked,
-                mirror: document.getElementById('bathroom-mirror').checked
-            };
-            
-            const facilitiesTasks = {
-                floor: document.getElementById('facilities-floor').checked,
-                dust: document.getElementById('facilities-dust').checked,
-                trash: document.getElementById('facilities-trash').checked,
-                arrange: document.getElementById('facilities-arrange').checked
-            };
-            
-            // تجهيز البيانات للحفظ
-            const scheduleData = {
-                schedule: {
-                    kitchen: selectedKitchenDays,
-                    bathroom: selectedBathroomDays,
-                    facilities: selectedFacilitiesDays
-                },
-                tasks: {
-                    kitchen: kitchenTasks,
-                    bathroom: bathroomTasks,
-                    facilities: facilitiesTasks
-                },
-                lastUpdated: new Date().toISOString()
-            };
-            
+    // تسجيل المهام المكتملة
+    async function markTasksCompleted() {
+        const userId = window.firebaseAuth.currentUser.uid;
+        if (!userId) return;
+        
+        const today = new Date();
+        const dateString = today.toLocaleDateString('ar-EG');
+        const timestamp = new Date().getTime();
+        
+        // جمع المهام المكتملة
+        const completedTasks = [];
+        
+        if (document.getElementById('kitchen-floor')?.checked) completedTasks.push('تنظيف أرضية المطبخ');
+        if (document.getElementById('kitchen-table')?.checked) completedTasks.push('تنظيف طاولة المطبخ');
+        if (document.getElementById('kitchen-stove')?.checked) completedTasks.push('تنظيف الطباخ');
+        if (document.getElementById('kitchen-sink')?.checked) completedTasks.push('تنظيف حوض المطبخ');
+        
+        if (document.getElementById('bathroom-floor')?.checked) completedTasks.push('تنظيف أرضية الحمام');
+        if (document.getElementById('bathroom-sink')?.checked) completedTasks.push('تنظيف حوض الحمام');
+        if (document.getElementById('bathroom-toilet')?.checked) completedTasks.push('تنظيف المرحاض');
+        if (document.getElementById('bathroom-mirror')?.checked) completedTasks.push('تنظيف مرآة الحمام');
+        
+        if (document.getElementById('facilities-floor')?.checked) completedTasks.push('كنس أرضية المرافق');
+        if (document.getElementById('facilities-dust')?.checked) completedTasks.push('إزالة الغبار من المرافق');
+        if (document.getElementById('facilities-trash')?.checked) completedTasks.push('إخراج القمامة');
+        if (document.getElementById('facilities-arrange')?.checked) completedTasks.push('ترتيب أثاث المرافق');
+        
+        if (completedTasks.length > 0) {
             try {
                 showLoading();
                 
-                await window.firebaseFunctions.update(
-                    window.firebaseFunctions.ref(window.firebaseDatabase, 'users/' + userId),
-                    scheduleData
+                const historyRecord = {
+                    userId: userId,
+                    date: dateString,
+                    tasks: completedTasks,
+                    status: 'completed',
+                    timestamp: timestamp
+                };
+                
+                await window.firebaseFunctions.push(
+                    window.firebaseFunctions.ref(window.firebaseDatabase, 'cleaningHistory'),
+                    historyRecord
                 );
                 
-                hideLoading();
-                alert('تم حفظ الجدول والمهام بنجاح!');
+                // إعادة تحميل السجل
+                await loadUserData(userId);
                 
-                // التحقق من المهام القادمة بعد الحفظ
-                checkUpcomingTasks(scheduleData);
+                hideLoading();
+                alert(`تم تسجيل ${completedTasks.length} مهمة مكتملة بنجاح!`);
                 
             } catch (error) {
                 hideLoading();
-                console.error('❌ خطأ في حفظ البيانات:', error);
-                alert('حدث خطأ أثناء حفظ البيانات');
+                console.error('❌ خطأ في تسجيل المهام:', error);
+                alert('حدث خطأ أثناء تسجيل المهام المكتملة');
             }
+        } else {
+            alert('لم تقم بتحديد أي مهام مكتملة');
         }
+    }
 
-        // تسجيل المهام المكتملة
-        async function markTasksCompleted() {
-            const userId = window.firebaseAuth.currentUser.uid;
-            if (!userId) return;
-            
-            const today = new Date();
-            const dateString = today.toLocaleDateString('ar-EG');
-            const timestamp = new Date().getTime();
-            
-            // جمع المهام المكتملة
-            const completedTasks = [];
-            
-            if (document.getElementById('kitchen-floor').checked) completedTasks.push('تنظيف أرضية المطبخ');
-            if (document.getElementById('kitchen-table').checked) completedTasks.push('تنظيف طاولة المطبخ');
-            if (document.getElementById('kitchen-stove').checked) completedTasks.push('تنظيف الطباخ');
-            if (document.getElementById('kitchen-sink').checked) completedTasks.push('تنظيف حوض المطبخ');
-            
-            if (document.getElementById('bathroom-floor').checked) completedTasks.push('تنظيف أرضية الحمام');
-            if (document.getElementById('bathroom-sink').checked) completedTasks.push('تنظيف حوض الحمام');
-            if (document.getElementById('bathroom-toilet').checked) completedTasks.push('تنظيف المرحاض');
-            if (document.getElementById('bathroom-mirror').checked) completedTasks.push('تنظيف مرآة الحمام');
-            
-            if (document.getElementById('facilities-floor').checked) completedTasks.push('كنس أرضية المرافق');
-            if (document.getElementById('facilities-dust').checked) completedTasks.push('إزالة الغبار من المرافق');
-            if (document.getElementById('facilities-trash').checked) completedTasks.push('إخراج القمامة');
-            if (document.getElementById('facilities-arrange').checked) completedTasks.push('ترتيب أثاث المرافق');
-            
-            if (completedTasks.length > 0) {
-                try {
-                    showLoading();
-                    
-                    const historyRecord = {
-                        userId: userId,
-                        date: dateString,
-                        tasks: completedTasks,
-                        status: 'completed',
-                        timestamp: timestamp
-                    };
-                    
-                    await window.firebaseFunctions.push(
-                        window.firebaseFunctions.ref(window.firebaseDatabase, 'cleaningHistory'),
-                        historyRecord
-                    );
-                    
-                    // إعادة تحميل السجل
-                    await loadUserData(userId);
-                    
-                    hideLoading();
-                    alert(`تم تسجيل ${completedTasks.length} مهمة مكتملة بنجاح!`);
-                    
-                } catch (error) {
-                    hideLoading();
-                    console.error('❌ خطأ في تسجيل المهام:', error);
-                    alert('حدث خطأ أثناء تسجيل المهام المكتملة');
-                }
-            } else {
-                alert('لم تقم بتحديد أي مهام مكتملة');
+    // تحميل سجل التنظيف
+// تحميل سجل التنظيف - 🔧 الإصلاح الكامل
+async function loadCleaningHistory(userId) {
+    const cleaningHistoryContainer = document.getElementById('cleaning-history');
+    if (!cleaningHistoryContainer) return;
+    
+    console.log('📜 جاري تحميل سجل التنظيف للمستخدم:', userId);
+    
+    try {
+        // جلب سجل التنظيف من Firebase
+        const historyRef = window.firebaseFunctions.ref(window.firebaseDatabase, 'cleaningHistory');
+        const snapshot = await window.firebaseFunctions.get(historyRef);
+        
+        if (!snapshot.exists()) {
+            cleaningHistoryContainer.innerHTML = '<p style="text-align: center; padding: 2rem; color: #6c757d;">لا توجد سجلات تنظيف سابقة</p>';
+            console.log('📭 لا توجد سجلات تنظيف في قاعدة البيانات');
+            return;
+        }
+        
+        const allHistory = [];
+        snapshot.forEach(childSnapshot => {
+            const record = childSnapshot.val();
+            record.id = childSnapshot.key; // إضافة المعرف
+            allHistory.push(record);
+        });
+        
+        console.log('📋 جميع السجلات المسترجعة:', allHistory);
+        
+        // تصفية السجلات للمستخدم الحالي فقط
+        const userHistory = allHistory.filter(record => {
+            const isUserRecord = record.userId === userId;
+            if (!isUserRecord) {
+                console.log('🚫 تصفية سجل ليس للمستخدم:', record);
             }
+            return isUserRecord;
+        });
+        
+        console.log('👤 سجلات المستخدم بعد التصفية:', userHistory.length, 'سجل');
+        
+        if (userHistory.length === 0) {
+            cleaningHistoryContainer.innerHTML = '<p style="text-align: center; padding: 2rem; color: #6c757d;">لا توجد سجلات تنظيف سابقة</p>';
+            return;
         }
+        
+        // ترتيب السجل من الأحدث إلى الأقدم
+        userHistory.sort((a, b) => {
+            const timeA = a.timestamp || (a.date ? new Date(a.date).getTime() : 0);
+            const timeB = b.timestamp || (b.date ? new Date(b.date).getTime() : 0);
+            return timeB - timeA;
+        });
+        
+        // عرض السجلات
+        displayCleaningHistory(cleaningHistoryContainer, userHistory);
+        
+    } catch (error) {
+        console.error('❌ خطأ في تحميل سجل التنظيف:', error);
+        cleaningHistoryContainer.innerHTML = `
+            <div style="text-align: center; padding: 2rem; color: #dc3545;">
+                <i class="fas fa-exclamation-triangle"></i>
+                <p>حدث خطأ في تحميل سجل التنظيف</p>
+                <small>${error.message}</small>
+            </div>
+        `;
+    }
+}
 
-        // تسجيل الخروج
-        async function handleLogout() {
-            try {
-                showLoading();
-                await window.firebaseFunctions.signOut(window.firebaseAuth);
-                
-                setTimeout(() => {
-                    authSection.style.display = 'flex';
-                    dashboard.style.display = 'none';
-                    hideLoading();
-                    
-                    // إعادة تعيين النماذج
-                    loginForm.reset();
-                    registerForm.reset();
-                    clearMessages();
-                }, 1000);
-                
-            } catch (error) {
-                console.error('❌ خطأ في تسجيل الخروج:', error);
+// عرض سجل التنظيف في الواجهة
+function displayCleaningHistory(container, userHistory) {
+    container.innerHTML = '';
+    
+    userHistory.forEach((record, index) => {
+        const historyItem = document.createElement('div');
+        historyItem.className = 'history-item';
+        
+        // معالجة التاريخ - إصلاح المشكلة الرئيسية
+        let displayDate = 'تاريخ غير معروف';
+        if (record.date && record.date !== "x.^q/\\/\\") {
+            displayDate = record.date;
+        } else if (record.timestamp) {
+            // تحويل timestamp إلى تاريخ مقروء
+            const date = new Date(record.timestamp);
+            displayDate = date.toLocaleDateString('ar-EG', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+        
+        // معالجة المهام
+        let tasksHtml = '';
+        if (record.tasks && Array.isArray(record.tasks)) {
+            tasksHtml = record.tasks.map(task => 
+                `<div style="margin: 2px 0; font-size: 0.9em;">• ${task}</div>`
+            ).join('');
+        } else {
+            tasksHtml = '<div style="color: #6c757d; font-style: italic;">لا توجد تفاصيل للمهام</div>';
+        }
+        
+        historyItem.innerHTML = `
+            <div class="history-date">
+                <i class="fas fa-calendar-alt"></i>
+                ${displayDate}
+            </div>
+            <div class="history-task">${tasksHtml}</div>
+            <div class="history-status status-completed">
+                <i class="fas fa-check-circle"></i>
+                ${record.status === 'completed' ? 'مكتمل' : 'منجز'}
+            </div>
+        `;
+        
+        container.appendChild(historyItem);
+    });
+    
+    console.log('✅ تم عرض سجل التنظيف بنجاح:', userHistory.length + ' سجل');
+}
+
+    // باقي الدوال المساعدة...
+    function showLoading() {
+        authSection.style.display = 'none';
+        dashboard.style.display = 'none';
+        loadingSection.style.display = 'block';
+    }
+
+    function setButtonLoading(button, isLoading) {
+        if (!button) return;
+        
+        const btnText = button.querySelector('.btn-text');
+        const btnLoading = button.querySelector('.btn-loading');
+        
+        if (isLoading) {
+            if (btnText) btnText.style.display = 'none';
+            if (btnLoading) btnLoading.style.display = 'inline';
+            button.disabled = true;
+        } else {
+            if (btnText) btnText.style.display = 'inline';
+            if (btnLoading) btnLoading.style.display = 'none';
+            button.disabled = false;
+        }
+    }
+
+    function showError(element, message) {
+        if (!element) return;
+        element.textContent = message;
+        element.style.display = 'block';
+    }
+
+    function showSuccess(element, message) {
+        if (!element) return;
+        element.textContent = message;
+        element.style.display = 'block';
+    }
+
+    function getAuthErrorMessage(errorCode) {
+        const errorMessages = {
+            'auth/invalid-email': 'البريد الإلكتروني غير صحيح',
+            'auth/user-disabled': 'هذا الحساب معطل',
+            'auth/user-not-found': 'لا يوجد حساب مرتبط بهذا البريد الإلكتروني',
+            'auth/wrong-password': 'كلمة المرور غير صحيحة',
+            'auth/email-already-in-use': 'هذا البريد الإلكتروني مستخدم بالفعل',
+            'auth/weak-password': 'كلمة المرور ضعيفة، يجب أن تكون 6 أحرف على الأقل',
+            'auth/network-request-failed': 'خطأ في الاتصال بالشبكة',
+            'auth/too-many-requests': 'محاولات تسجيل دخول كثيرة، حاول لاحقاً'
+        };
+        
+        return errorMessages[errorCode] || 'حدث خطأ غير متوقع';
+    }
+
+    function handlePasswordReset() {
+        const email = document.getElementById('email').value;
+        const loginError = document.getElementById('login-error');
+        const loginSuccess = document.getElementById('login-success');
+        
+        if (!email) {
+            showError(loginError, 'يرجى إدخال البريد الإلكتروني أولاً');
+            return;
+        }
+        
+        window.firebaseFunctions.sendPasswordResetEmail(window.firebaseAuth, email)
+            .then(() => {
+                showSuccess(loginSuccess, 'تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني');
+            })
+            .catch(error => {
+                showError(loginError, getAuthErrorMessage(error.code));
+            });
+    }
+
+    async function handleLogout() {
+        try {
+            showLoading();
+            await window.firebaseFunctions.signOut(window.firebaseAuth);
+            
+            setTimeout(() => {
+                authSection.style.display = 'flex';
+                dashboard.style.display = 'none';
                 hideLoading();
-            }
-        }
-
-        // التحقق من المهام القادمة
-        function checkUpcomingTasks(userData) {
-            const today = new Date();
-            const todayName = daysOfWeek[today.getDay()];
-            
-            let hasUpcomingTask = false;
-            let taskMessage = "";
-            
-            if (userData.schedule?.kitchen?.includes(todayName)) {
-                hasUpcomingTask = true;
-                taskMessage += "• لديك تنظيف المطبخ اليوم.<br>";
-            }
-            
-            if (userData.schedule?.bathroom?.includes(todayName)) {
-                hasUpcomingTask = true;
-                taskMessage += "• لديك تنظيف الحمام اليوم.<br>";
-            }
-            
-            if (userData.schedule?.facilities?.includes(todayName)) {
-                hasUpcomingTask = true;
-                taskMessage += "• لديك تنظيف المرافق اليوم.<br>";
-            }
-            
-            if (hasUpcomingTask) {
-                reminderDetails.innerHTML = taskMessage;
-                reminderNotification.style.display = 'flex';
-            } else {
-                reminderNotification.style.display = 'none';
-            }
-        }
-
-        // تحميل سجل التنظيف
-        function loadCleaningHistory(userHistory) {
-            if (!userHistory || userHistory.length === 0) {
-                cleaningHistoryContainer.innerHTML = '<p style="text-align: center; padding: 2rem; color: #6c757d;">لا توجد سجلات تنظيف سابقة</p>';
-                return;
-            }
-            
-            // ترتيب السجل من الأحدث إلى الأقدم
-            userHistory.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-            
-            cleaningHistoryContainer.innerHTML = '';
-            
-            userHistory.forEach(record => {
-                const historyItem = document.createElement('div');
-                historyItem.className = 'history-item';
                 
-                const tasksList = record.tasks.map(task => `<div>• ${task}</div>`).join('');
-                
-                historyItem.innerHTML = `
-                    <div class="history-date">${record.date}</div>
-                    <div class="history-task">${tasksList}</div>
-                    <div class="history-status status-completed">مكتمل</div>
-                `;
-                
-                cleaningHistoryContainer.appendChild(historyItem);
-            });
+                // إعادة تعيين النماذج
+                const loginForm = document.getElementById('loginForm');
+                const registerForm = document.getElementById('registerForm');
+                if (loginForm) loginForm.reset();
+                if (registerForm) registerForm.reset();
+                clearMessages();
+            }, 1000);
+            
+        } catch (error) {
+            console.error('❌ خطأ في تسجيل الخروج:', error);
+            hideLoading();
         }
+    }
 
-        // التحقق من حالة المصادقة
-        function checkAuthState() {
-            window.firebaseFunctions.onAuthStateChanged(window.firebaseAuth, (user) => {
-                if (user) {
-                    console.log('👤 مستخدم مسجل الدخول:', user.email);
-                    loadUserData(user.uid);
-                } else {
-                    console.log('🚪 لا يوجد مستخدم مسجل الدخول');
-                    authSection.style.display = 'flex';
-                    dashboard.style.display = 'none';
-                }
-            });
+    function checkUpcomingTasks(userData) {
+        const reminderNotification = document.getElementById('reminder-notification');
+        const reminderDetails = document.getElementById('reminder-details');
+        if (!reminderNotification || !reminderDetails) return;
+        
+        const today = new Date();
+        const todayName = daysOfWeek[today.getDay()];
+        
+        let hasUpcomingTask = false;
+        let taskMessage = "";
+        
+        if (userData.schedule?.kitchen?.includes(todayName)) {
+            hasUpcomingTask = true;
+            taskMessage += "• لديك تنظيف المطبخ اليوم.<br>";
         }
+        
+        if (userData.schedule?.bathroom?.includes(todayName)) {
+            hasUpcomingTask = true;
+            taskMessage += "• لديك تنظيف الحمام اليوم.<br>";
+        }
+        
+        if (userData.schedule?.facilities?.includes(todayName)) {
+            hasUpcomingTask = true;
+            taskMessage += "• لديك تنظيف المرافق اليوم.<br>";
+        }
+        
+        if (hasUpcomingTask) {
+            reminderDetails.innerHTML = taskMessage;
+            reminderNotification.style.display = 'flex';
+        } else {
+            reminderNotification.style.display = 'none';
+        }
+    }
 
-        // بدء التطبيق
-        document.addEventListener('DOMContentLoaded', initializeApp);
-   
-    setTimeout(function() {
-        document.getElementById('loading-section').style.display = 'none';
-        document.getElementById('auth-section').style.display = 'flex';
-    }, 3000);
+    // بدء التطبيق
+    document.addEventListener('DOMContentLoaded', startApp);
 </script>
 </body>
 </html>
